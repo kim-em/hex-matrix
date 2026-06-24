@@ -15,18 +15,32 @@ jobs:
         with:
           auto-config: false
           build: false
+      - name: Install FLINT oracle dependencies
+        run: sudo apt-get update && sudo apt-get install -y libgmp-dev
+      - name: Install python-flint
+        run: python3 -m pip install --user python-flint
       - name: Build library
         run: lake build
-      - name: Build + smoke conformance
+      - name: Build conformance sidecar
         run: |
           cd conformance
           lake build
-          lake exe hexmatrix_emit_fixtures | head -1
-      - name: Build + smoke bench (list; full comparator verify needs FLINT — see oracle-in-CI follow-up)
+          cd ..
+      - name: Conformance oracle (python-flint cross-check)
+        run: bash scripts/ci/run_oracles.sh
+      - name: Build + full bench verify (FLINT comparator)
+        env:
+          # Hard cap per SPEC/benchmarking.md §CI integration "Time
+          # budget". The bench verifies the fixed FLINT comparator
+          # rungs (runFlintBareissDet*), spawning the persistent
+          # python-flint driver once per run.
+          BENCH_VERIFY_HARD_CAP_SECONDS: "360"
+          HEX_FLINT_BENCH_DRIVER: ${{ github.workspace }}/scripts/oracle/flint_bench_driver.py
+          HEX_FLINT_BENCH_PYTHON: python3
         run: |
           cd bench
-          lake build
-          lake exe hexmatrix_bench list
+          lake build hexmatrix_bench
+          bash ../scripts/ci/check_bench_verify_budget.sh hexmatrix_bench
       - name: Assert Mathlib-free
         run: |
           if find . -type d -name mathlib | grep -q .; then
