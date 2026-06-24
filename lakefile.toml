@@ -1,0 +1,11 @@
+name = "hex-matrix"
+defaultTargets = ["HexMatrix"]
+
+[[require]]
+name = "batteries"
+git = "https://github.com/leanprover-community/batteries.git"
+rev = "v4.30.0-rc2"
+
+[[lean_lib]]
+name = "HexMatrix"
+precompileModules = true
