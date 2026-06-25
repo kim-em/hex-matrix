@@ -132,7 +132,7 @@ Mathlib-free consumer:
 A Mathlib-free consumer that *appears to require* a theorem on
 this list is the failure mode caught by
 [PLAN/Conventions.md §Library placement is a hard precondition
-question 2](../../PLAN/Conventions.md). The repair is to relocate
+question 2](https://github.com/kim-em/hex-dev/blob/main/PLAN/Conventions.md#library-placement-is-a-hard-precondition). The repair is to relocate
 the consumer's bridging theorem to the sibling `*-mathlib` layer
 (or to redesign the consumer's proof surface so it does not need
 to connect Hex computation to Leibniz `det` at the Mathlib-free
@@ -153,7 +153,7 @@ bordered-minor invariant under a renamed lemma, or threading
 `bareiss_eq_det` through twice while hiding it behind a wrapper.
 The shortest-path test in
 [PLAN/Conventions.md §Library placement is a hard precondition
-question 2](../../PLAN/Conventions.md) governs **proof
+question 2](https://github.com/kim-em/hex-dev/blob/main/PLAN/Conventions.md#library-placement-is-a-hard-precondition) governs **proof
 obligations**, not statement surface. A Hex-local statement with a
 bridge-only proof is the same SPEC violation as a bridge-typed
 statement, dressed up.
@@ -264,15 +264,15 @@ different asymptotic and constant-factor profile from Bareiss
 fraction-free elimination. The comparator is `informational`:
 the ratio is recorded for orientation but is not a Phase-4 gate.
 Wired via a persistent-subprocess Python driver per
-`SPEC/benchmarking.md §"External comparators" §"Process call"`.
+[the benchmarking spec's "External comparators" section](https://github.com/kim-em/hex-dev/blob/main/SPEC/benchmarking.md#external-comparators).
 
 The library's other Phase-4 surfaces (matrix multiplication, row
 operations, transposition, slicing) have no external comparator
 named. They declare absence with the **structural-layer** reason
-per `SPEC/benchmarking.md §"Comparator naming"`: those surfaces
+per [the benchmarking spec's "Comparator naming" section](https://github.com/kim-em/hex-dev/blob/main/SPEC/benchmarking.md#comparator-naming): those surfaces
 are GMP-backed `Int` arithmetic on `Vector` / `Array` primitives,
 and the determinant comparator covers the only matrix-specific
 algorithmic surface where an external reference adds meaningful
 orientation.
 
-Structured metadata in `libraries.yml: HexMatrix.phase4.comparators`.
+Structured metadata in the project's [`libraries.yml`](https://github.com/kim-em/hex-dev/blob/main/libraries.yml) under `HexMatrix.phase4.comparators`.
