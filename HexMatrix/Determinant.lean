@@ -689,7 +689,7 @@ private theorem foldl_det_sum_zero {R : Type u} [Lean.Grind.CommRing R]
 
 /-- If `a - b + c = 0` and `f x - g x + h x = 0` for every `x ∈ xs`, then the same
 combination of the three summing folds from `a`, `b`, `c` is `0`. -/
-private theorem foldl_det_sum_sub_add_zero_of_body_zero
+private theorem foldl_det_sum_sub_add_zero
     {R : Type u} [Lean.Grind.CommRing R] {β : Type v}
     (xs : List β) (f g h : β → R) (a b c : R)
     (hacc : a - b + c = 0)
@@ -722,7 +722,7 @@ private theorem foldl_det_product_mul_left {R : Type u} [Lean.Grind.CommRing R]
 
 /-- When `i ∉ xs`, scaling the factor at index `i` by `c` leaves the multiplying
 fold unchanged, since no element of `xs` equals `i`. -/
-private theorem foldl_det_product_no_scale_of_not_mem {R : Type u}
+private theorem foldl_det_product_no_scale {R : Type u}
     [Lean.Grind.CommRing R] {β : Type v} [DecidableEq β]
     (xs : List β) (i : β) (c : R) (f : β → R) (z : R) (hnot : i ∉ xs) :
     xs.foldl (fun acc x => acc * if x = i then c * f x else f x) z =
@@ -759,7 +759,7 @@ private theorem foldl_det_product_single_scale {R : Type u}
         calc
           xs.foldl (fun acc x => acc * if x = i then c * f x else f x) (z * (c * f i)) =
               xs.foldl (fun acc x => acc * f x) (z * (c * f i)) := by
-                exact foldl_det_product_no_scale_of_not_mem xs i c f (z * (c * f i)) hnodup.1
+                exact foldl_det_product_no_scale xs i c f (z * (c * f i)) hnodup.1
           _ = xs.foldl (fun acc x => acc * f x) (c * (z * f i)) := by
                 congr 1
                 grind
@@ -911,7 +911,7 @@ private theorem identity_get {R : Type u} [OfNat R 0] [OfNat R 1] {n : Nat}
 
 /-- `detProduct` of the identity matrix along `perm` is `0` whenever `perm` moves
 some index, that is `perm[i] ≠ i`. -/
-private theorem detProduct_identity_zero_of_mismatch {R : Type u}
+private theorem detProduct_identity_zero {R : Type u}
     [Lean.Grind.CommRing R] {n : Nat} (perm : Vector (Fin n) n)
     (i : Fin n) (h : perm[i] ≠ i) :
     detProduct (1 : Matrix R n n) perm = 0 := by
@@ -944,7 +944,7 @@ private theorem insertAt_last_get_castSucc {α : Type u} {n : Nat}
 
 /-- For `i ≤ r < xs.length`, element `r + 1` of `xs.insertIdx i x` is the original
 `xs[r]`, since the insertion shifts later entries up by one. -/
-private theorem list_getElem_insertIdx_succ_of_le {α : Type u}
+private theorem list_getElem_insertIdx_succ {α : Type u}
     (xs : List α) (x : α) {i r : Nat} (h : i ≤ r) (hr : r < xs.length) :
     (xs.insertIdx i x)[r + 1]'(by
       have hi : i ≤ xs.length := Nat.le_trans h (Nat.le_of_lt hr)
@@ -977,7 +977,7 @@ private theorem detProduct_identity_insertAt_not_last_zero {R : Type u}
     (i : Fin (n + 1)) (h : i ≠ Fin.last n) :
     detProduct (1 : Matrix R (n + 1) (n + 1))
       (insertAt (Fin.last n) (v.map Fin.castSucc) i) = 0 := by
-  apply detProduct_identity_zero_of_mismatch
+  apply detProduct_identity_zero
   exact by
     rw [insertAt_get_self]
     exact h.symm
@@ -1237,7 +1237,7 @@ private theorem insertAt_last_castSucc_nodup {n : Nat}
 
 /-- A `Nodup` list of `Fin (n + 1)` with full length `n + 1` must contain
 `Fin.last n`. -/
-private theorem finLast_mem_of_full_nodup {n : Nat} {xs : List (Fin (n + 1))}
+private theorem finLast_mem {n : Nat} {xs : List (Fin (n + 1))}
     (hlen : xs.length = n + 1) (hnodup : xs.Nodup) :
     Fin.last n ∈ xs := by
   by_cases hmem : Fin.last n ∈ xs
@@ -1293,7 +1293,7 @@ private theorem insertAt_get_raiseFinAbove {α : Type u} {n : Nat}
           rw [List.length_insertIdx_of_le_length hi]
           simpa [Vector.length_toList] using Nat.lt_succ_of_lt r.isLt)
   · simpa using
-      list_getElem_insertIdx_succ_of_le v.toList x (Nat.le_of_not_gt ‹¬r.val < i.val›)
+      list_getElem_insertIdx_succ v.toList x (Nat.le_of_not_gt ‹¬r.val < i.val›)
         (by simp [Vector.length_toList])
 
 /-- `raiseFinAbove i` is strictly monotone: `raiseFinAbove i a < raiseFinAbove i b`
@@ -1508,7 +1508,7 @@ private theorem fin_mem_of_full_nodup_for_count {n : Nat} {xs : List (Fin n)}
     | succ n => omega
 
 /-- A nodup list of `Fin n` of length `n` is a permutation of `List.finRange n`. -/
-private theorem list_perm_finRange_of_full_nodup {n : Nat} {xs : List (Fin n)}
+private theorem list_perm_finRange {n : Nat} {xs : List (Fin n)}
     (hlen : xs.length = n) (hnodup : xs.Nodup) :
     xs.Perm (List.finRange n) := by
   rw [List.perm_ext_iff_of_nodup hnodup (List.nodup_finRange n)]
@@ -1526,7 +1526,7 @@ private theorem foldCount_full_nodup_ge {n : Nat} (i : Fin (n + 1))
     xs.foldl (fun acc y => acc + if i.val ≤ y.val then 1 else 0) 0 =
       n - i.val := by
   rw [foldCount_perm (fun y : Fin n => i.val ≤ y.val)
-    (list_perm_finRange_of_full_nodup hlen hnodup)]
+    (list_perm_finRange hlen hnodup)]
   exact foldCount_finRange_ge i
 
 /-- `Fin.castSucc` undoes `lowerFinLast`: `(lowerFinLast x h).castSucc = x`. -/
@@ -1536,10 +1536,10 @@ private theorem lowerFinLast_castSucc {n : Nat} (x : Fin (n + 1))
   exact Fin.ext rfl
 
 /-- In a length-`(n + 1)` nodup list the index of `Fin.last n` is within bounds. -/
-private theorem finLast_idxOf_lt_of_full_nodup {n : Nat} {xs : List (Fin (n + 1))}
+private theorem finLast_idxOf_lt {n : Nat} {xs : List (Fin (n + 1))}
     (hlen : xs.length = n + 1) (hnodup : xs.Nodup) :
     xs.idxOf (Fin.last n) < xs.length := by
-  exact List.idxOf_lt_length_of_mem (finLast_mem_of_full_nodup hlen hnodup)
+  exact List.idxOf_lt_length_of_mem (finLast_mem hlen hnodup)
 
 /-- `peelLastVector perm k …` removes the entry `Fin.last n` (located at position
 `k`) from a nodup permutation vector, lowering each remaining entry back to
@@ -1689,7 +1689,7 @@ theorem permutationVectors_complete {n : Nat} {perm : Vector (Fin n) n}
       let k := perm.toList.idxOf (Fin.last n)
       have hk : k < n + 1 := by
         simpa [k, Vector.length_toList] using
-          finLast_idxOf_lt_of_full_nodup (by simp [Vector.length_toList]) hnodup
+          finLast_idxOf_lt (by simp [Vector.length_toList]) hnodup
       have hidx : perm.toList.idxOf (Fin.last n) = k := rfl
       let peeled := peelLastVector perm k hk hidx hnodup
       have hpeeled : peeled ∈ permutationVectors n := by
@@ -2018,7 +2018,7 @@ private theorem insertAt_get_skipIndex {α : Type u} {n : Nat}
 
 /-- `List.finRange (n + 1)` decomposes as the `Fin n` enumeration mapped through
 `skipIndex i` with `i` inserted at position `i.val`. -/
-private theorem list_finRange_succ_eq_insertIdx_skipIndex {n : Nat} (i : Fin (n + 1)) :
+private theorem list_finRange_succ_eq {n : Nat} (i : Fin (n + 1)) :
     List.finRange (n + 1) =
       ((List.finRange n).map (skipIndex i)).insertIdx i.val i := by
   have hilen : i.val ≤ ((List.finRange n).map (skipIndex i)).length := by
@@ -2055,7 +2055,7 @@ private theorem list_finRange_succ_eq_insertIdx_skipIndex {n : Nat} (i : Fin (n 
 /-- `List.finRange (n + 1)` is a permutation of `i :: ((List.finRange n).map (skipIndex i))`. -/
 private theorem list_finRange_succ_perm_skipIndex {n : Nat} (i : Fin (n + 1)) :
     (List.finRange (n + 1)).Perm (i :: (List.finRange n).map (skipIndex i)) := by
-  rw [list_finRange_succ_eq_insertIdx_skipIndex i]
+  rw [list_finRange_succ_eq i]
   have hilen : i.val ≤ ((List.finRange n).map (skipIndex i)).length := by
     simp [List.length_finRange]; exact Nat.le_of_lt_succ i.isLt
   exact List.perm_insertIdx i ((List.finRange n).map (skipIndex i)) hilen
@@ -2110,7 +2110,7 @@ private theorem detTerm_insertAt_general {R : Type u} [Lean.Grind.CommRing R] {n
   rw [cofactorSign_last_eq_pow]
   grind
 
-private theorem detProduct_insertAt_not_last_zero_of_last_row_zero
+private theorem detProduct_insertAt_not_last_zero
     {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (M : Matrix R (n + 1) (n + 1)) (v : Vector (Fin n) n)
     (i : Fin (n + 1)) (hi : i ≠ Fin.last n)
@@ -2132,14 +2132,14 @@ private theorem detProduct_insertAt_not_last_zero_of_last_row_zero
     simp [List.getElem_insertIdx_of_gt, hiVal, Vector.toList]
   exact hrow ((insertAt (Fin.last n) (v.map Fin.castSucc) i)[Fin.last n]) hcolVal
 
-private theorem detTerm_insertAt_not_last_zero_of_last_row_zero
+private theorem detTerm_insertAt_not_last_zero
     {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (M : Matrix R (n + 1) (n + 1)) (v : Vector (Fin n) n)
     (i : Fin (n + 1)) (hi : i ≠ Fin.last n)
     (hrow : ∀ j : Fin (n + 1), j.val < n → M[Fin.last n][j] = 0) :
     detTerm M (insertAt (Fin.last n) (v.map Fin.castSucc) i) = 0 := by
   unfold detTerm
-  rw [detProduct_insertAt_not_last_zero_of_last_row_zero M v i hi hrow]
+  rw [detProduct_insertAt_not_last_zero M v i hi hrow]
   grind
 
 private theorem foldl_detTerm_last_row_insertions
@@ -2167,7 +2167,7 @@ private theorem foldl_detTerm_last_row_insertions
         (List.finRange n).foldl (fun acc (_i : Fin n) => acc + (0 : R)) z := by
           apply foldl_det_sum_congr
           intro i _hmem
-          rw [detTerm_insertAt_not_last_zero_of_last_row_zero M v i.castSucc
+          rw [detTerm_insertAt_not_last_zero M v i.castSucc
             (by
               intro hlast
               have hval := congrArg Fin.val hlast
@@ -2541,8 +2541,8 @@ private theorem transposePermutationValues_get {n : Nat}
     (transposePermutationValues perm i j)[r] = perm[finTranspose i j r] := by
   simp [transposePermutationValues]
 
-/-- `vector_toList_eq_finRange_map_get` rewrites a vector's list view as the finite range of indices mapped through its getter. -/
-private theorem vector_toList_eq_finRange_map_get {α : Type u} {n : Nat}
+/-- `vector_toList_eq` rewrites a vector's list view as the finite range of indices mapped through its getter. -/
+private theorem vector_toList_eq {α : Type u} {n : Nat}
     (v : Vector α n) :
     v.toList = (List.finRange n).map fun i => v[i] := by
   apply List.ext_getElem
@@ -2554,8 +2554,8 @@ private theorem vector_toList_eq_finRange_map_get {α : Type u} {n : Nat}
 private theorem transposePermutationValues_toList_perm {n : Nat}
     (perm : Vector (Fin n) n) (i j : Fin n) :
     (transposePermutationValues perm i j).toList.Perm perm.toList := by
-  rw [vector_toList_eq_finRange_map_get (transposePermutationValues perm i j)]
-  rw [vector_toList_eq_finRange_map_get perm]
+  rw [vector_toList_eq (transposePermutationValues perm i j)]
+  rw [vector_toList_eq perm]
   have hleft :
       (List.finRange n).map (fun r => (transposePermutationValues perm i j)[r]) =
         (List.finRange n).map ((fun r => perm[r]) ∘ finTranspose i j) := by
@@ -2871,10 +2871,10 @@ private theorem fin_mem_of_full_nodup {n : Nat} {xs : List (Fin n)}
     | zero => exact Fin.elim0 x
     | succ n => omega
 
-/-- `fin_idxOf_lt_of_full_nodup` bounds `xs.idxOf x` below `xs.length` for a
+/-- `fin_idxOf_lt` bounds `xs.idxOf x` below `xs.length` for a
 full nodup list, supplying the `Fin n` index proof obligation for the
 `inversePermutationValues` entries. -/
-private theorem fin_idxOf_lt_of_full_nodup {n : Nat} {xs : List (Fin n)}
+private theorem fin_idxOf_lt {n : Nat} {xs : List (Fin n)}
     (x : Fin n) (hlen : xs.length = n) (hnodup : xs.Nodup) :
     xs.idxOf x < xs.length := by
   exact List.idxOf_lt_length_of_mem (fin_mem_of_full_nodup x hlen hnodup)
@@ -2888,7 +2888,7 @@ private def inversePermutationValues {n : Nat}
     ⟨perm.toList.idxOf c,
       by
         simpa [Vector.length_toList] using
-          fin_idxOf_lt_of_full_nodup c (by simp [Vector.length_toList]) hnodup⟩
+          fin_idxOf_lt c (by simp [Vector.length_toList]) hnodup⟩
 
 /-- `inversePermutationValues_get_value` is the right-inverse law
 `perm[inv[c]] = c`, recovering the value `c` by reading `perm` at the position
@@ -2917,7 +2917,7 @@ sign-tracking expansion. -/
 private theorem inversePermutationValues_nodup {n : Nat}
     (perm : Vector (Fin n) n) (hnodup : perm.toList.Nodup) :
     (inversePermutationValues perm hnodup).toList.Nodup := by
-  rw [vector_toList_eq_finRange_map_get]
+  rw [vector_toList_eq]
   apply list_nodup_map_of_injective
   · intro a b h
     have hval :
@@ -3037,7 +3037,7 @@ private theorem inversionCount_inversePermutationValues_mod_two {n : Nat}
       let k := perm.toList.idxOf (Fin.last n)
       have hk : k < n + 1 := by
         simpa [k, Vector.length_toList] using
-          finLast_idxOf_lt_of_full_nodup (by simp [Vector.length_toList]) hnodup
+          finLast_idxOf_lt (by simp [Vector.length_toList]) hnodup
       have hidx : perm.toList.idxOf (Fin.last n) = k := rfl
       let peeled := peelLastVector perm k hk hidx hnodup
       have hpeeled_nodup : peeled.toList.Nodup :=
@@ -3160,7 +3160,7 @@ private theorem composePermutationValues_nodup {n : Nat}
     {sigma tau : Vector (Fin n) n}
     (hsigma : sigma.toList.Nodup) (htau : tau.toList.Nodup) :
     (composePermutationValues sigma tau).toList.Nodup := by
-  rw [vector_toList_eq_finRange_map_get (composePermutationValues sigma tau)]
+  rw [vector_toList_eq (composePermutationValues sigma tau)]
   apply list_nodup_map_of_injective
     (f := fun i : Fin n => (composePermutationValues sigma tau)[i])
     ?_ (List.nodup_finRange n)
@@ -3216,7 +3216,7 @@ private theorem composePermutationValues_mem_permutationVectors {n : Nat}
     (composePermutationValues_nodup
       (permutationVectors_nodup hsigma) (permutationVectors_nodup htau))
 
-private theorem composePermutationValues_left_involutive_of_inverse {n : Nat}
+private theorem composePermutationValues_left_involutive {n : Nat}
     {sigma tau : Vector (Fin n) n}
     (hsigma : sigma ∈ permutationVectors n) :
     composePermutationValues
@@ -3234,13 +3234,13 @@ private theorem composePermutationValues_left_involutive_of_inverse {n : Nat}
   simpa [composePermutationValues] using
     inversePermutationValues_get_index sigma hnodup tau[i]
 
-private theorem composePermutationValues_left_inverse_of_inverse {n : Nat}
+private theorem composePermutationValues_left_inverse {n : Nat}
     {sigma tau : Vector (Fin n) n}
     (hsigma : sigma ∈ permutationVectors n) :
     composePermutationValues sigma
         (composePermutationValues (inversePermutationVector sigma) tau) = tau := by
   have h :=
-    composePermutationValues_left_involutive_of_inverse
+    composePermutationValues_left_involutive
       (sigma := inversePermutationVector sigma) (tau := tau)
       (inversePermutationVector_mem_permutationVectors hsigma)
   rw [inversePermutationVector_involutive_of_mem hsigma] at h
@@ -3257,9 +3257,9 @@ private theorem composePermutationValues_left_map_permutationVectors_perm {n : N
       have h' := congrArg
         (fun perm => composePermutationValues (inversePermutationVector sigma) perm) hab
       exact
-        (composePermutationValues_left_involutive_of_inverse (sigma := sigma) (tau := a) hsigma).symm.trans
+        (composePermutationValues_left_involutive (sigma := sigma) (tau := a) hsigma).symm.trans
           (h'.trans
-            (composePermutationValues_left_involutive_of_inverse (sigma := sigma) (tau := b) hsigma)))
+            (composePermutationValues_left_involutive (sigma := sigma) (tau := b) hsigma)))
   apply (List.perm_ext_iff_of_nodup hmapNodup permutationVectors_nodup_list).mpr
   intro perm
   constructor
@@ -3272,7 +3272,7 @@ private theorem composePermutationValues_left_map_permutationVectors_perm {n : N
       ?_, ?_⟩
     · exact composePermutationValues_mem_permutationVectors
         (inversePermutationVector_mem_permutationVectors hsigma) hmem
-    · exact composePermutationValues_left_inverse_of_inverse hsigma
+    · exact composePermutationValues_left_inverse hsigma
 
 private theorem inversePermutationVector_map_permutationVectors_perm {n : Nat} :
     ((permutationVectors n).map inversePermutationVector).Perm
@@ -3330,7 +3330,7 @@ private theorem permutationVectors_composePermutationValues_left_sum {R : Type u
 private theorem finRange_map_perm_get_perm {n : Nat}
     (perm : Vector (Fin n) n) (hnodup : perm.toList.Nodup) :
     ((List.finRange n).map fun i => perm[i]).Perm (List.finRange n) := by
-  rw [← vector_toList_eq_finRange_map_get perm]
+  rw [← vector_toList_eq perm]
   apply (List.perm_ext_iff_of_nodup hnodup (List.nodup_finRange n)).mpr
   intro x
   constructor
@@ -3377,25 +3377,25 @@ private theorem detProduct_transpose_inversePermutationValues {R : Type u}
           (fun c => M[c][(inversePermutationValues perm hnodup)[c]])
           (finRange_map_perm_get_perm perm hnodup) 1
 
-private theorem swapPermutationValues_eq_transposePermutationValues {n : Nat}
+private theorem swapPermutationValues_eq {n : Nat}
     (perm : Vector (Fin n) n) (i j : Fin n)
     (hnodup : perm.toList.Nodup) :
     let pi : Fin n := ⟨perm.toList.idxOf i,
       by simpa [Vector.length_toList] using
-        fin_idxOf_lt_of_full_nodup i (by simp [Vector.length_toList]) hnodup⟩
+        fin_idxOf_lt i (by simp [Vector.length_toList]) hnodup⟩
     let pj : Fin n := ⟨perm.toList.idxOf j,
       by simpa [Vector.length_toList] using
-        fin_idxOf_lt_of_full_nodup j (by simp [Vector.length_toList]) hnodup⟩
+        fin_idxOf_lt j (by simp [Vector.length_toList]) hnodup⟩
     swapPermutationValues perm i j = transposePermutationValues perm pi pj := by
   dsimp
   apply Vector.ext
   intro r hr
   let pi : Fin n := ⟨perm.toList.idxOf i,
     by simpa [Vector.length_toList] using
-      fin_idxOf_lt_of_full_nodup i (by simp [Vector.length_toList]) hnodup⟩
+      fin_idxOf_lt i (by simp [Vector.length_toList]) hnodup⟩
   let pj : Fin n := ⟨perm.toList.idxOf j,
     by simpa [Vector.length_toList] using
-      fin_idxOf_lt_of_full_nodup j (by simp [Vector.length_toList]) hnodup⟩
+      fin_idxOf_lt j (by simp [Vector.length_toList]) hnodup⟩
   have hpi_get : perm[pi] = i := by
     have hlt : perm.toList.idxOf i < perm.toList.length := by
       simpa [pi, Vector.length_toList] using pi.isLt
@@ -3575,10 +3575,10 @@ theorem detSign_swapPermutationValues {R : Type u}
     detSign (R := R) perm = -detSign (R := R) (swapPermutationValues perm i j) := by
   let pi : Fin n := ⟨perm.toList.idxOf i,
     by simpa [Vector.length_toList] using
-      fin_idxOf_lt_of_full_nodup i (by simp [Vector.length_toList]) hnodup⟩
+      fin_idxOf_lt i (by simp [Vector.length_toList]) hnodup⟩
   let pj : Fin n := ⟨perm.toList.idxOf j,
     by simpa [Vector.length_toList] using
-      fin_idxOf_lt_of_full_nodup j (by simp [Vector.length_toList]) hnodup⟩
+      fin_idxOf_lt j (by simp [Vector.length_toList]) hnodup⟩
   have hpij : pi ≠ pj := by
     intro hp
     have hpi_get : perm[pi] = i := by
@@ -3596,7 +3596,7 @@ theorem detSign_swapPermutationValues {R : Type u}
     exact h (by rw [← hpi_get, ← hpj_get, hp])
   have hswap :
       swapPermutationValues perm i j = transposePermutationValues perm pi pj := by
-    simpa [pi, pj] using swapPermutationValues_eq_transposePermutationValues perm i j hnodup
+    simpa [pi, pj] using swapPermutationValues_eq perm i j hnodup
   rw [hswap]
   exact detSign_transposeValues (R := R) perm pi pj hnodup hpij
 
@@ -3687,7 +3687,7 @@ private theorem exists_adjacent_descent {n : Nat}
       let k := perm.toList.idxOf (Fin.last n)
       have hk : k < n + 1 := by
         simpa [k, Vector.length_toList] using
-          finLast_idxOf_lt_of_full_nodup (by simp [Vector.length_toList]) hnodup
+          finLast_idxOf_lt (by simp [Vector.length_toList]) hnodup
       have hidx : perm.toList.idxOf (Fin.last n) = k := rfl
       let peeled := peelLastVector perm k hk hidx hnodup
       have hpeeled_nodup : peeled.toList.Nodup :=
@@ -3831,7 +3831,7 @@ private theorem exists_adjacent_descent {n : Nat}
           rw [hget_right, hget_left]
           simp [Fin.lt_def]
 
-private theorem perm_eq_identity_of_inversionCount_zero {n : Nat}
+private theorem perm_eq_identity {n : Nat}
     (perm : Vector (Fin n) n) (hmem : perm ∈ permutationVectors n)
     (hinv : inversionCount perm.toList = 0) :
     perm = Vector.ofFn fun i : Fin n => i := by
@@ -3845,7 +3845,7 @@ private theorem perm_eq_identity_of_inversionCount_zero {n : Nat}
       let k := perm.toList.idxOf (Fin.last n)
       have hk : k < n + 1 := by
         simpa [k, Vector.length_toList] using
-          finLast_idxOf_lt_of_full_nodup (by simp [Vector.length_toList]) hnodup
+          finLast_idxOf_lt (by simp [Vector.length_toList]) hnodup
       have hidx : perm.toList.idxOf (Fin.last n) = k := rfl
       let peeled := peelLastVector perm k hk hidx hnodup
       have hpeeled_nodup : peeled.toList.Nodup :=
@@ -3913,7 +3913,7 @@ theorem detSign_composePermutationValues
     by_cases hk : k = 0
     · subst hk
       have hid : tau' = Vector.ofFn fun i : Fin n => i :=
-        perm_eq_identity_of_inversionCount_zero tau' htau' hcount
+        perm_eq_identity tau' htau' hcount
       have hcompose_id :
           composePermutationValues sigma tau' = sigma := by
         rw [hid]
@@ -3996,17 +3996,17 @@ private theorem swapPermutationValues_idxOf_left {n : Nat}
     (swapPermutationValues perm i j).toList.idxOf i = perm.toList.idxOf j := by
   let pi : Fin n := ⟨perm.toList.idxOf i,
     by simpa [Vector.length_toList] using
-      fin_idxOf_lt_of_full_nodup i (by simp [Vector.length_toList]) hnodup⟩
+      fin_idxOf_lt i (by simp [Vector.length_toList]) hnodup⟩
   let pj : Fin n := ⟨perm.toList.idxOf j,
     by simpa [Vector.length_toList] using
-      fin_idxOf_lt_of_full_nodup j (by simp [Vector.length_toList]) hnodup⟩
+      fin_idxOf_lt j (by simp [Vector.length_toList]) hnodup⟩
   have hpi_get : perm[pi] = i := by
     have hlt : perm.toList.idxOf i < perm.toList.length := by
       simpa [pi, Vector.length_toList] using pi.isLt
     exact List.getElem_idxOf (x := i) (xs := perm.toList) hlt
   have hswap :
       swapPermutationValues perm i j = transposePermutationValues perm pi pj := by
-    simpa [pi, pj] using swapPermutationValues_eq_transposePermutationValues perm i j hnodup
+    simpa [pi, pj] using swapPermutationValues_eq perm i j hnodup
   have hpj_swap : (swapPermutationValues perm i j)[pj] = i := by
     rw [hswap, transposePermutationValues_get]
     calc
@@ -4048,15 +4048,15 @@ private theorem swapPermutationValues_idxOf_right {n : Nat}
   rw [hcomm]
   exact swapPermutationValues_idxOf_left perm j i hnodup
 
-private theorem permutation_idxOf_ne_of_ne {n : Nat}
+private theorem permutation_idxOf_ne {n : Nat}
     (perm : Vector (Fin n) n) (i j : Fin n)
     (hnodup : perm.toList.Nodup) (h : i ≠ j) :
     perm.toList.idxOf i ≠ perm.toList.idxOf j := by
   intro hidx
   have hiLt : perm.toList.idxOf i < perm.toList.length :=
-    fin_idxOf_lt_of_full_nodup i (by simp [Vector.length_toList]) hnodup
+    fin_idxOf_lt i (by simp [Vector.length_toList]) hnodup
   have hjLt : perm.toList.idxOf j < perm.toList.length :=
-    fin_idxOf_lt_of_full_nodup j (by simp [Vector.length_toList]) hnodup
+    fin_idxOf_lt j (by simp [Vector.length_toList]) hnodup
   have hiGet : perm.toList[perm.toList.idxOf i]'hiLt = i :=
     List.getElem_idxOf (x := i) (xs := perm.toList) hiLt
   have hjGet : perm.toList[perm.toList.idxOf j]'hjLt = j :=
@@ -4145,10 +4145,10 @@ private theorem detProduct_colAdd {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
   let pivot : Fin n := ⟨perm.toList.idxOf dst,
     by
       simpa [Vector.length_toList] using
-        fin_idxOf_lt_of_full_nodup dst (by simp [Vector.length_toList]) hnodup⟩
+        fin_idxOf_lt dst (by simp [Vector.length_toList]) hnodup⟩
   have hpivot : perm[pivot] = dst := by
     have hlt : perm.toList.idxOf dst < perm.toList.length :=
-      fin_idxOf_lt_of_full_nodup dst (by simp [Vector.length_toList]) hnodup
+      fin_idxOf_lt dst (by simp [Vector.length_toList]) hnodup
     have hget : perm.toList[perm.toList.idxOf dst]'hlt = dst :=
       List.getElem_idxOf (x := dst) (xs := perm.toList) hlt
     change perm.toList[pivot.val]'(by simp [Vector.length_toList, pivot.isLt]) = dst
@@ -4679,7 +4679,7 @@ private theorem permutationVectors_duplicateCol_sum {R : Type u} [Lean.Grind.Com
           simp [p] at hpfalse ⊢
           rw [swapPermutationValues_idxOf_left perm src dst hpermNodup]
           rw [swapPermutationValues_idxOf_right perm src dst hpermNodup]
-          have hneIdx := permutation_idxOf_ne_of_ne perm src dst hpermNodup h
+          have hneIdx := permutation_idxOf_ne perm src dst hpermNodup h
           omega
         · exact swapPermutationValues_involutive perm src dst
     calc
@@ -5008,10 +5008,10 @@ private theorem detProduct_colReplace_add {R : Type u} [Lean.Grind.CommRing R]
   let pivot : Fin n := ⟨perm.toList.idxOf dst,
     by
       simpa [Vector.length_toList] using
-        fin_idxOf_lt_of_full_nodup dst (by simp [Vector.length_toList]) hnodup⟩
+        fin_idxOf_lt dst (by simp [Vector.length_toList]) hnodup⟩
   have hpivot : perm[pivot] = dst := by
     have hlt : perm.toList.idxOf dst < perm.toList.length :=
-      fin_idxOf_lt_of_full_nodup dst (by simp [Vector.length_toList]) hnodup
+      fin_idxOf_lt dst (by simp [Vector.length_toList]) hnodup
     have hget : perm.toList[perm.toList.idxOf dst]'hlt = dst :=
       List.getElem_idxOf (x := dst) (xs := perm.toList) hlt
     change perm.toList[pivot.val]'(by simp [Vector.length_toList, pivot.isLt]) = dst
@@ -5103,10 +5103,10 @@ private theorem detProduct_colReplace_smul {R : Type u} [Lean.Grind.CommRing R]
   let pivot : Fin n := ⟨perm.toList.idxOf dst,
     by
       simpa [Vector.length_toList] using
-        fin_idxOf_lt_of_full_nodup dst (by simp [Vector.length_toList]) hnodup⟩
+        fin_idxOf_lt dst (by simp [Vector.length_toList]) hnodup⟩
   have hpivot : perm[pivot] = dst := by
     have hlt : perm.toList.idxOf dst < perm.toList.length :=
-      fin_idxOf_lt_of_full_nodup dst (by simp [Vector.length_toList]) hnodup
+      fin_idxOf_lt dst (by simp [Vector.length_toList]) hnodup
     have hget : perm.toList[perm.toList.idxOf dst]'hlt = dst :=
       List.getElem_idxOf (x := dst) (xs := perm.toList) hlt
     change perm.toList[pivot.val]'(by simp [Vector.length_toList, pivot.isLt]) = dst
@@ -5749,7 +5749,7 @@ private theorem foldl_det_sum_nested_zero {R : Type u} [Lean.Grind.CommRing R]
 
 /-- Inner sum-over-permutations collapse: for any row `i`, the Leibniz terms whose
 permutation sends row `i` to the last column collapse to `M[i][last] * cofactor M i last`. -/
-private theorem foldl_detTerm_insertions_eq_cofactor
+private theorem foldl_detTerm_insertions_eq
     {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (M : Matrix R (n + 1) (n + 1)) (i : Fin (n + 1)) :
     (permutationVectors n).foldl
@@ -5811,7 +5811,7 @@ theorem det_eq_foldl_laplace_last
   apply foldl_acc_congr
   intro acc i _hmem
   congr 1
-  exact foldl_detTerm_insertions_eq_cofactor M i
+  exact foldl_detTerm_insertions_eq M i
 
 /-- Laplace expansion of the determinant along the final row. -/
 theorem det_eq_foldl_laplace_last_row
@@ -5862,7 +5862,7 @@ permutation of the columns. -/
 private theorem moveColumnToLastValues_nodup {n : Nat} (col : Fin (n + 1)) :
     (moveColumnToLastValues col).toList.Nodup := by
   rw [moveColumnToLastValues, insertAt_last_toList]
-  rw [vector_toList_eq_finRange_map_get]
+  rw [vector_toList_eq]
   rw [List.nodup_append]
   refine ⟨?_, ?_, ?_⟩
   · apply list_nodup_map_of_injective
@@ -5899,7 +5899,7 @@ private theorem moveColumnToLastValues_toList {n : Nat} (col : Fin (n + 1)) :
     (moveColumnToLastValues col).toList =
       ((List.finRange n).map (raiseFinAbove col)) ++ [col] := by
   rw [moveColumnToLastValues, insertAt_last_toList]
-  rw [vector_toList_eq_finRange_map_get]
+  rw [vector_toList_eq]
   apply congrArg (fun xs => xs ++ [col])
   apply List.map_congr_left
   intro i _hi
@@ -5914,7 +5914,7 @@ private theorem detSign_moveColumnToLastValues
       (-1 : R) ^ (n - col.val) := by
   have hidList :
       (Vector.ofFn fun i : Fin n => i).toList = List.finRange n := by
-    rw [vector_toList_eq_finRange_map_get]
+    rw [vector_toList_eq]
     simp
   calc
     detSign (R := R) (moveColumnToLastValues col) =
@@ -5939,10 +5939,10 @@ private theorem neg_one_pow_mul_self {R : Type u} [Lean.Grind.CommRing R] (k : N
   | succ k ih =>
       grind
 
-/-- `cofactorSign_col_eq_move_mul_last` relates the cofactor sign at column `col` to
+/-- `cofactorSign_col_eq` relates the cofactor sign at column `col` to
 the sign at the last column through the `(-1) ^ (n - col.val)` column-move factor, the
 parity bookkeeping that turns last-column Laplace expansion into expansion along `col`. -/
-private theorem cofactorSign_col_eq_move_mul_last
+private theorem cofactorSign_col_eq
     {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (row col : Fin (n + 1)) :
     cofactorSign (R := R) row col =
@@ -6034,7 +6034,7 @@ theorem det_eq_foldl_laplace_col
           exact congrArg (fun c => M[skipIndex row ii][c])
             (moveColumnToLastValues_castSucc col jj)
         rw [hClast, hminor]
-        rw [cofactorSign_col_eq_move_mul_last (R := R) row col]
+        rw [cofactorSign_col_eq (R := R) row col]
         grind
 
 /-- Laplace expansion of the determinant along an arbitrary fixed row. -/
@@ -6126,7 +6126,7 @@ private theorem columnSumMatrixWithSuffix_nil
   rw [columnSumMatrixWithSuffix_entry, columnSumMatrix_entry]
   rw [dif_neg (show ¬ n - ([] : List (Fin m)).length ≤ c by simp; omega)]
 
-private theorem columnSumMatrixWithSuffix_eq_columnTupleMatrix
+private theorem columnSumMatrixWithSuffix_eq
     {R : Type u} [Lean.Grind.CommRing R] {n m : Nat}
     (source coeff : Matrix R n m) (chosen : List (Fin m))
     (hfull : chosen.length = n) :
@@ -6612,7 +6612,7 @@ private theorem det_columnSumMatrixWithSuffix_eq_sum
   ·
       have hfull : chosen.length = n := by omega
       subst n
-      rw [columnSumMatrixWithSuffix_eq_columnTupleMatrix source coeff chosen hfull]
+      rw [columnSumMatrixWithSuffix_eq source coeff chosen hfull]
       let hcast : 0 = chosen.length - chosen.length := by omega
       rw [columnTupleVectors_foldl_vectorLengthCast hcast]
       simp only [columnTupleVectors, List.foldl_cons, List.foldl_nil]
@@ -7023,7 +7023,7 @@ def sortInjTuple {m n : Nat} (cols : Vector (Fin m) n) : Vector (Fin m) n :=
 
 /-- Strict version of `List.countP_mono_left`: a single witness where
 `q` holds but `p` doesn't forces strict inequality. -/
-private theorem countP_lt_countP_of_witness {α : Type u}
+private theorem countP_lt_countP {α : Type u}
     (p q : α → Bool)
     (hle_all : ∀ (xs : List α) (x : α), x ∈ xs → p x = true → q x = true) :
     ∀ (xs : List α) (k : α), k ∈ xs → q k = true → p k = false →
@@ -7041,7 +7041,7 @@ private theorem countP_lt_countP_of_witness {α : Type u}
         omega
       · -- k ∈ xs: recurse on the tail.
         have ih :=
-          countP_lt_countP_of_witness p q hle_all xs k hk_in_xs hqk hpk
+          countP_lt_countP p q hle_all xs k hk_in_xs hqk hpk
         by_cases hpx : p x = true
         · have hqx : q x = true := hle_all (x :: xs) x List.mem_cons_self hpx
           simp [hpx, hqx]; omega
@@ -7075,7 +7075,7 @@ private theorem columnRankNat_strictMono {m n : Nat} (cols : Vector (Fin m) n)
   unfold columnRankNat
   rw [hlen_eq_p, hlen_eq_q]
   -- Strict comparison via element `i`.
-  refine countP_lt_countP_of_witness
+  refine countP_lt_countP
     (fun k => decide (cols[k].val < cols[i].val))
     (fun k => decide (cols[k].val < cols[j].val))
     ?_ (List.finRange n) i (List.mem_finRange i)
@@ -7099,11 +7099,11 @@ private theorem columnRankNat_injective_of_injective {m n : Nat}
   · exact absurd (columnRankNat_strictMono cols hgt) (by omega)
 
 /-- For an injective `cols`, `sortInjPerm cols` is a permutation as a list. -/
-private theorem sortInjPerm_toList_nodup_of_injective {m n : Nat}
+private theorem sortInjPerm_toList_nodup {m n : Nat}
     (cols : Vector (Fin m) n)
     (hinj : Function.Injective (columnTupleVectorFn cols)) :
     (sortInjPerm cols).toList.Nodup := by
-  rw [vector_toList_eq_finRange_map_get]
+  rw [vector_toList_eq]
   apply list_nodup_map_of_injective ?_ (List.nodup_finRange n)
   intro i j hij
   have hval : columnRankNat cols i = columnRankNat cols j := by
@@ -7116,11 +7116,11 @@ theorem sortInjPerm_mem_permutationVectors {m n : Nat}
     (cols : Vector (Fin m) n)
     (hinj : Function.Injective (columnTupleVectorFn cols)) :
     sortInjPerm cols ∈ permutationVectors n :=
-  permutationVectors_complete (sortInjPerm_toList_nodup_of_injective cols hinj)
+  permutationVectors_complete (sortInjPerm_toList_nodup cols hinj)
 
 /-- Converse of `columnRankNat_strictMono` for injective `cols`: a strict
 rank comparison implies the underlying value comparison. -/
-private theorem cols_val_lt_of_rank_lt_of_injective {m n : Nat}
+private theorem cols_val_lt_of_rank_lt {m n : Nat}
     (cols : Vector (Fin m) n)
     (hinj : Function.Injective (columnTupleVectorFn cols))
     {i j : Fin n} (hij : columnRankNat cols i < columnRankNat cols j) :
@@ -7163,7 +7163,7 @@ theorem cols_getElem_eq_sortInjTuple_sortInjPerm {m n : Nat}
     (hinj : Function.Injective (columnTupleVectorFn cols))
     (i : Fin n) :
     cols[i] = (sortInjTuple cols)[(sortInjPerm cols)[i]] := by
-  have hnodup := sortInjPerm_toList_nodup_of_injective cols hinj
+  have hnodup := sortInjPerm_toList_nodup cols hinj
   have hidx :=
     inversePermutationValues_get_index (sortInjPerm cols) hnodup i
   have hinv_eq : inversePermutationVector (sortInjPerm cols)
@@ -7185,7 +7185,7 @@ private theorem sortInjPerm_inv_apply {m n : Nat}
     (cols : Vector (Fin m) n)
     (hinj : Function.Injective (columnTupleVectorFn cols)) (r : Fin n) :
     (sortInjPerm cols)[(inversePermutationVector (sortInjPerm cols))[r]] = r := by
-  have hnodup := sortInjPerm_toList_nodup_of_injective cols hinj
+  have hnodup := sortInjPerm_toList_nodup cols hinj
   have hval := inversePermutationValues_get_value (sortInjPerm cols) hnodup r
   have hinv_eq : inversePermutationVector (sortInjPerm cols)
                    = inversePermutationValues (sortInjPerm cols) hnodup :=
@@ -7222,7 +7222,7 @@ theorem isStrictlyIncreasingColumnTuple_sortInjTuple {m n : Nat}
   have hval_lt :
       cols[(inversePermutationVector (sortInjPerm cols))[r]].val <
         cols[(inversePermutationVector (sortInjPerm cols))[r']].val :=
-    cols_val_lt_of_rank_lt_of_injective cols hinj hrank_lt
+    cols_val_lt_of_rank_lt cols hinj hrank_lt
   show (sortInjTuple cols)[r].val < (sortInjTuple cols)[r'].val
   rw [sortInjTuple, vector_ofFn_getElem_fin, vector_ofFn_getElem_fin]
   exact hval_lt
@@ -7417,7 +7417,7 @@ private theorem permutationVectors_count_val_lt {n : Nat}
     rw [List.countP_map]
     rfl
   have htoList : perm.toList = (List.finRange n).map (fun j : Fin n => perm[j]) :=
-    vector_toList_eq_finRange_map_get perm
+    vector_toList_eq perm
   rw [hmap, ← htoList]
   rw [List.Perm.countP_eq _ (permutationVectors_toList_perm_finRange hmem)]
   rw [countP_finRange_val_lt]
@@ -8173,19 +8173,19 @@ the leading prefix minor obtained by deleting the last row and column. -/
 
 These private helpers prove determinant multiplicativity for Hex.det. -/
 
-private theorem ofFn_toList_eq_map_finRange {α : Type v} {n : Nat}
+private theorem ofFn_toList_eq {α : Type v} {n : Nat}
     (f : Fin n → α) :
     (Vector.ofFn f).toList = (List.finRange n).map f := by
-  rw [vector_toList_eq_finRange_map_get]
+  rw [vector_toList_eq]
   apply List.map_congr_left
   intro i _
   exact vector_ofFn_getElem_fin f i
 
-private theorem ofFn_mem_permutationVectors_of_injective {n : Nat}
+private theorem ofFn_mem_permutationVectors {n : Nat}
     (cols : Fin n → Fin n) (hcols : Function.Injective cols) :
     Vector.ofFn cols ∈ permutationVectors n := by
   apply permutationVectors_complete
-  rw [ofFn_toList_eq_map_finRange]
+  rw [ofFn_toList_eq]
   apply list_nodup_map_on (List.nodup_finRange n)
   intro a _ha b _hb hab
   exact hcols hab
@@ -8214,11 +8214,11 @@ private theorem det_columnTupleMatrix_of_injective
     det (columnTupleMatrix M cols) =
       detSign (R := R) (Vector.ofFn cols) * det M := by
   have hmem : Vector.ofFn cols ∈ permutationVectors n :=
-    ofFn_mem_permutationVectors_of_injective cols hcols
+    ofFn_mem_permutationVectors cols hcols
   rw [columnTupleMatrix_eq_ofFn_ofFn M cols]
   exact det_colPermute_vector M (Vector.ofFn cols) hmem
 
-private theorem det_columnTupleMatrix_eq_det_mul_det_one
+private theorem det_columnTupleMatrix_eq
     {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (M : Matrix R n n) (cols : Fin n → Fin n) :
     det (columnTupleMatrix M cols) =
@@ -8290,7 +8290,7 @@ theorem det_mul
                 (columnTupleVectorFn cols)))) 0 := by
     apply foldl_det_sum_congr
     intro cols _
-    rw [det_columnTupleMatrix_eq_det_mul_det_one M (columnTupleVectorFn cols)]
+    rw [det_columnTupleMatrix_eq M (columnTupleVectorFn cols)]
     exact Lean.Grind.CommSemiring.mul_left_comm _ _ _
   rw [hbody_eq]
   rw [foldl_det_sum_mul_left_zero
@@ -8609,7 +8609,7 @@ private theorem rowMoveUp_row_between {R : Type u} {n m : Nat}
 /-! ### One-row `setRow` transports to ordered `nDet` minors
 
 For `a < b < t` in `Fin (n + 2)`, the private helpers
-`rowMoveUp_setRow_nMatrix_replace_first_eq_nMatrix` and
+`rowMoveUp_setRow_nMatrix_replace_first` and
 `_replace_second_eq_nMatrix` identify the result of replacing the
 `(t.val - 2)`-th row of `nMatrix B a b hab` with `B[a]` (respectively
 `B[b]`) as a `rowMoveUp` of the ordered minor `nMatrix B b t` (resp.
@@ -8622,7 +8622,7 @@ required by the ordered four-row Plucker assembly. -/
 `nMatrix B a b hab` by `B[a]` and then sliding that row up to position
 `a.val` by `t.val - a.val - 2` adjacent swaps reproduces
 `nMatrix B b t hbt`. -/
-private theorem rowMoveUp_setRow_nMatrix_replace_first_eq_nMatrix
+private theorem rowMoveUp_setRow_nMatrix_replace_first
     {R : Type u} {n : Nat} (B : Matrix R (n + 2) n)
     (a b t : Fin (n + 2)) (hab : a.val < b.val) (hbt : b.val < t.val)
     (s : Fin n) (hs : s.val = t.val - 2)
@@ -8769,7 +8769,7 @@ private theorem rowMoveUp_setRow_nMatrix_replace_first_eq_nMatrix
 `nMatrix B a b hab` by `B[b]` and then sliding that row up to position
 `b.val - 1` by `t.val - b.val - 1` adjacent swaps reproduces
 `nMatrix B a t (Nat.lt_trans hab hbt)`. -/
-private theorem rowMoveUp_setRow_nMatrix_replace_second_eq_nMatrix
+private theorem rowMoveUp_setRow_nMatrix_replace_second
     {R : Type u} {n : Nat} (B : Matrix R (n + 2) n)
     (a b t : Fin (n + 2)) (hab : a.val < b.val) (hbt : b.val < t.val)
     (s : Fin n) (hs : s.val = t.val - 2)
@@ -8916,7 +8916,7 @@ private theorem rowMoveUp_setRow_nMatrix_replace_second_eq_nMatrix
 replacing the `s2 = ⟨r2.val - 2, _⟩` row of `nMatrix B r0 r1 h01` by
 `B[r0]` produces the signed `nDet B r1 r2 h12` minor with sign
 `(-1) ^ (r2.val - r0.val - 2)`. -/
-private theorem det_setRow_nMatrix_r2_r0_eq_pow_mul_nDet_r1_r2
+private theorem det_setRow_nMatrix_r2_r0
     {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (B : Matrix R (n + 2) n)
     (r0 r1 r2 r3 : Fin (n + 2))
@@ -8929,7 +8929,7 @@ private theorem det_setRow_nMatrix_r2_r0_eq_pow_mul_nDet_r1_r2
   have hsk : r0.val + (r2.val - r0.val - 2) < n := by
     have _h13 : r1.val < r3.val := Nat.lt_trans h12 h23
     have := r3.isLt; omega
-  have hrow := rowMoveUp_setRow_nMatrix_replace_first_eq_nMatrix
+  have hrow := rowMoveUp_setRow_nMatrix_replace_first
       B r0 r1 r2 h01 h12 s2 rfl hsk
   have hdet_rm :=
     det_rowMoveUp (setRow M s2 B[r0]) r0.val (r2.val - r0.val - 2) hsk
@@ -8943,7 +8943,7 @@ private theorem det_setRow_nMatrix_r2_r0_eq_pow_mul_nDet_r1_r2
 /-- For ordered rows `r0 < r1 < r2 < r3`, replacing the
 `s3 = ⟨r3.val - 2, _⟩` row of `nMatrix B r0 r1 h01` by `B[r0]` produces
 the signed `nDet B r1 r3 _` minor with sign `(-1) ^ (r3.val - r0.val - 2)`. -/
-private theorem det_setRow_nMatrix_r3_r0_eq_pow_mul_nDet_r1_r3
+private theorem det_setRow_nMatrix_r3_r0
     {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (B : Matrix R (n + 2) n)
     (r0 r1 r2 r3 : Fin (n + 2))
@@ -8957,7 +8957,7 @@ private theorem det_setRow_nMatrix_r3_r0_eq_pow_mul_nDet_r1_r3
   have h13 : r1.val < r3.val := Nat.lt_trans h12 h23
   have hsk : r0.val + (r3.val - r0.val - 2) < n := by
     have := r3.isLt; omega
-  have hrow := rowMoveUp_setRow_nMatrix_replace_first_eq_nMatrix
+  have hrow := rowMoveUp_setRow_nMatrix_replace_first
       B r0 r1 r3 h01 h13 s3 rfl hsk
   have hdet_rm :=
     det_rowMoveUp (setRow M s3 B[r0]) r0.val (r3.val - r0.val - 2) hsk
@@ -8971,7 +8971,7 @@ private theorem det_setRow_nMatrix_r3_r0_eq_pow_mul_nDet_r1_r3
 /-- For ordered rows `r0 < r1 < r2 < r3`, replacing the
 `s2 = ⟨r2.val - 2, _⟩` row of `nMatrix B r0 r1 h01` by `B[r1]` produces
 the signed `nDet B r0 r2 _` minor with sign `(-1) ^ (r2.val - r1.val - 1)`. -/
-private theorem det_setRow_nMatrix_r2_r1_eq_pow_mul_nDet_r0_r2
+private theorem det_setRow_nMatrix_r2_r1
     {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (B : Matrix R (n + 2) n)
     (r0 r1 r2 r3 : Fin (n + 2))
@@ -8985,7 +8985,7 @@ private theorem det_setRow_nMatrix_r2_r1_eq_pow_mul_nDet_r0_r2
   have h02 : r0.val < r2.val := Nat.lt_trans h01 h12
   have hsk : r1.val - 1 + (r2.val - r1.val - 1) < n := by
     have := r3.isLt; omega
-  have hrow := rowMoveUp_setRow_nMatrix_replace_second_eq_nMatrix
+  have hrow := rowMoveUp_setRow_nMatrix_replace_second
       B r0 r1 r2 h01 h12 s2 rfl hsk
   have hdet_rm :=
     det_rowMoveUp (setRow M s2 B[r1]) (r1.val - 1) (r2.val - r1.val - 1) hsk
@@ -8999,7 +8999,7 @@ private theorem det_setRow_nMatrix_r2_r1_eq_pow_mul_nDet_r0_r2
 /-- For ordered rows `r0 < r1 < r2 < r3`, replacing the
 `s3 = ⟨r3.val - 2, _⟩` row of `nMatrix B r0 r1 h01` by `B[r1]` produces
 the signed `nDet B r0 r3 _` minor with sign `(-1) ^ (r3.val - r1.val - 1)`. -/
-private theorem det_setRow_nMatrix_r3_r1_eq_pow_mul_nDet_r0_r3
+private theorem det_setRow_nMatrix_r3_r1
     {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (B : Matrix R (n + 2) n)
     (r0 r1 r2 r3 : Fin (n + 2))
@@ -9014,7 +9014,7 @@ private theorem det_setRow_nMatrix_r3_r1_eq_pow_mul_nDet_r0_r3
   have h03 : r0.val < r3.val := Nat.lt_trans h01 h13
   have hsk : r1.val - 1 + (r3.val - r1.val - 1) < n := by
     have := r3.isLt; omega
-  have hrow := rowMoveUp_setRow_nMatrix_replace_second_eq_nMatrix
+  have hrow := rowMoveUp_setRow_nMatrix_replace_second
       B r0 r1 r3 h01 h13 s3 rfl hsk
   have hdet_rm :=
     det_rowMoveUp (setRow M s3 B[r1]) (r1.val - 1) (r3.val - r1.val - 1) hsk
@@ -9109,7 +9109,7 @@ private theorem rowMoveUp_setRow_of_gt {R : Type u} {n m : Nat}
 `setRow (setRow (nMatrix B r0 r1 h01) s2 B[r0]) s3 B[r1]` (with
 `s2 = ⟨r2.val - 2, _⟩` and `s3 = ⟨r3.val - 2, _⟩`) has determinant
 `(-1)^((r2 - r0 - 2) + (r3 - r1 - 2)) * nDet B r2 r3 h23`. -/
-private theorem det_setRow_setRow_nMatrix_r2_r0_r3_r1_eq_pow_mul_nDet_r2_r3
+private theorem det_setRow_setRow_nMatrix_r2_r0_r3_r1
     {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (B : Matrix R (n + 2) n)
     (r0 r1 r2 r3 : Fin (n + 2))
@@ -9142,7 +9142,7 @@ private theorem det_setRow_setRow_nMatrix_r2_r0_r3_r1_eq_pow_mul_nDet_r2_r3
   have hrow1 :
       rowMoveUp (setRow M s2 B[r0]) r0.val (r2.val - r0.val - 2) hsk1 =
         nMatrix B r1 r2 h12 :=
-    rowMoveUp_setRow_nMatrix_replace_first_eq_nMatrix
+    rowMoveUp_setRow_nMatrix_replace_first
       B r0 r1 r2 h01 h12 s2 rfl hsk1
   rw [hrow1] at hcommute
   -- Step 3: outer `det_rowMoveUp` peels off the first sign factor.
@@ -9157,7 +9157,7 @@ private theorem det_setRow_setRow_nMatrix_r2_r0_r3_r1_eq_pow_mul_nDet_r2_r3
       rowMoveUp (setRow (nMatrix B r1 r2 h12) s3 B[r1]) r1.val
           (r3.val - r1.val - 2) hsk2 =
         nMatrix B r2 r3 h23 :=
-    rowMoveUp_setRow_nMatrix_replace_first_eq_nMatrix
+    rowMoveUp_setRow_nMatrix_replace_first
       B r1 r2 r3 h12 h23 s3 rfl hsk2
   -- Step 5: inner `det_rowMoveUp` peels off the second sign factor.
   have hdet_inner :=
@@ -10071,7 +10071,7 @@ private theorem det_plucker_three_term_of_basisVec
   rw [← foldl_det_sum_mul_right_zero (List.finRange (n + 2))
       (fun q => v[q] * mDet B (basisVec (R := R) q) p3)
       (nDet B p1 p2 h12)]
-  apply foldl_det_sum_sub_add_zero_of_body_zero
+  apply foldl_det_sum_sub_add_zero
       (List.finRange (n + 2))
       (fun q => v[q] * mDet B (basisVec (R := R) q) p1 *
         nDet B p2 p3 h23)
@@ -10183,7 +10183,7 @@ The proof computes the `(c, s)` entry of
 `adjugate (setRow M r u) * (setRow M r u * adjugate M)` two ways: directly,
 by isolating the `i = r` and `i = s` terms, and via `mul_assoc` plus
 `adjugate_mul_apply`. -/
-private theorem det_mul_cofactor_setRow_eq_cofactorRowPairing_mul_sub
+private theorem det_mul_cofactor_setRow_eq
     {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (M : Matrix R (n + 1) (n + 1))
     (r s c : Fin (n + 1)) (u : Vector R (n + 1)) (hrs : s ≠ r) :
@@ -10337,7 +10337,7 @@ theorem cofactorRowPairing_setRow_plucker
     apply foldl_pairing_mul_sub
     · grind
     · intro c
-      exact det_mul_cofactor_setRow_eq_cofactorRowPairing_mul_sub M a b c u
+      exact det_mul_cofactor_setRow_eq M a b c u
         (fun h => hab h.symm)
   rw [hpre]
   grind
@@ -10400,19 +10400,19 @@ private theorem nDet_plucker_four_row_canonical
           (⟨r2.val - 2, hsk2⟩ : Fin (n' + 1))
           (⟨r3.val - 2, hsk3⟩ : Fin (n' + 1)) hs2s3 B[r0] B[r1]
       have ho :=
-        det_setRow_setRow_nMatrix_r2_r0_r3_r1_eq_pow_mul_nDet_r2_r3
+        det_setRow_setRow_nMatrix_r2_r0_r3_r1
           B r0 r1 r2 r3 h01 h12 h23
       have ha :=
-        det_setRow_nMatrix_r2_r0_eq_pow_mul_nDet_r1_r2
+        det_setRow_nMatrix_r2_r0
           B r0 r1 r2 r3 h01 h12 h23
       have hb :=
-        det_setRow_nMatrix_r3_r1_eq_pow_mul_nDet_r0_r3
+        det_setRow_nMatrix_r3_r1
           B r0 r1 r2 r3 h01 h12 h23
       have hc :=
-        det_setRow_nMatrix_r2_r1_eq_pow_mul_nDet_r0_r2
+        det_setRow_nMatrix_r2_r1
           B r0 r1 r2 r3 h01 h12 h23
       have hd :=
-        det_setRow_nMatrix_r3_r0_eq_pow_mul_nDet_r1_r3
+        det_setRow_nMatrix_r3_r0
           B r0 r1 r2 r3 h01 h12 h23
       simp only at ho ha hb hc hd
       rw [ho, ha, hb, hc, hd] at hsq
