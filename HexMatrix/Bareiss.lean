@@ -1079,6 +1079,7 @@ def finish (state : BareissState n) : BareissData n :=
 
 /-- Bareiss elimination without pivoting. A zero pivot aborts and records the
 singular step. -/
+@[expose]
 def noPivotLoop (fuel : Nat) (state : BareissState n) : BareissState n :=
   match fuel with
   | 0 => state
