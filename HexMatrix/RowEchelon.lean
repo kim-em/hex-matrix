@@ -845,6 +845,7 @@ def colAdd [Mul R] [Add R] (M : Matrix R n m) (src dst : Fin m) (c : R) : Matrix
 
 This is the right-scalar variant of `colAdd`. It is the column-add operation
 whose right-multiplication wrapper is valid over a noncommutative ring. -/
+@[expose]
 def colAddRight [Mul R] [Add R] (M : Matrix R n m) (src dst : Fin m) (c : R) :
     Matrix R n m :=
   Matrix.ofFn fun i j => if j = dst then M[i][j] + M[i][src] * c else M[i][j]

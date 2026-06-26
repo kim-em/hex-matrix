@@ -30,7 +30,7 @@ def rowCombination [Mul R] [Add R] [OfNat R 0] (M : Matrix R n m) (c : Vector R 
     Vector R m :=
   Matrix.transpose M * c
 
-private structure RrefState (R : Type u) (n m : Nat) where
+structure RrefState (R : Type u) (n m : Nat) where
   row : Nat
   echelon : Matrix R n m
   transform : Matrix R n n
@@ -711,7 +711,7 @@ private theorem eliminateColumn_preserve_canonical_column
           simpa only [hx, hcoeff, if_false, next] using ih next hSrcNext hcanon.1 hcanon.2
 
 /-- Process columns left-to-right, performing Gauss-Jordan elimination. -/
-private def rrefLoop (col fuel : Nat) (state : RrefState R n m) : RrefState R n m :=
+def rrefLoop (col fuel : Nat) (state : RrefState R n m) : RrefState R n m :=
   match fuel with
   | 0 => state
   | fuel + 1 =>
@@ -1603,6 +1603,7 @@ private theorem rrefLoop_transform_preserve (M : Matrix R n m) :
         exact h
 
 /-- Reduced row echelon form data computed by Gauss-Jordan elimination. -/
+@[expose]
 def rref (M : Matrix R n m) : RowEchelonData R n m :=
   let final := rrefLoop 0 m
     { row := 0
@@ -2196,7 +2197,7 @@ private def pivotIndexAux (D : RowEchelonData R n m) (j : Fin m) (start fuel : N
         none
 
 /-- Find the pivot-row index for column `j`, if `j` is a pivot column. -/
-private def pivotIndex? (D : RowEchelonData R n m) (j : Fin m) : Option (Fin D.rank) :=
+def pivotIndex? (D : RowEchelonData R n m) (j : Fin m) : Option (Fin D.rank) :=
   pivotIndexAux D j 0 D.rank
 
 private theorem pivotIndexAux_pivot (E : IsEchelonForm M D) (i : Fin D.rank) :
@@ -2263,6 +2264,7 @@ private theorem pivotIndex?_free_none (E : IsEchelonForm M D) (k : Fin (m - D.ra
   exact E.pivotCols_disjoint_freeCols i k
 
 /-- Nullspace basis vectors assembled as columns indexed by the free variables. -/
+@[expose]
 def nullspaceMatrix [Lean.Grind.Ring R] (E : IsRREF M D) :
     Matrix R m (m - D.rank) :=
   let freeCols := E.toIsEchelonForm.freeCols
@@ -2303,6 +2305,7 @@ the matching pivot row and free column. -/
     pivotIndex?_pivot E.toIsEchelonForm i]
 
 /-- The individual nullspace basis vectors. -/
+@[expose]
 def nullspace [Lean.Grind.Ring R] (E : IsRREF M D) :
     Vector (Vector R m) (m - D.rank) :=
   Vector.ofFn fun k => Matrix.col (E.nullspaceMatrix) k
@@ -3018,16 +3021,19 @@ theorem spanContains_iff [Lean.Grind.Field R] [DecidableEq R]
   simpa using (rref_isRREF M).spanContains_iff v
 
 /-- The rank returned by `rref`. -/
+@[expose]
 def rref_rank [Lean.Grind.Field R] [DecidableEq R] (M : Matrix R n m) : Nat :=
   (rref M).rank
 
 /-- The public nullspace basis assembled as a matrix of basis columns. -/
+@[expose]
 def nullspaceBasisMatrix [Lean.Grind.Field R] [DecidableEq R] (M : Matrix R n m) :
     Matrix R m (m - rref_rank M) :=
   let E := rref_isRREF M
   E.nullspaceMatrix
 
 /-- Convenience wrapper: compute the nullspace basis using `rref` internally. -/
+@[expose]
 def nullspace [Lean.Grind.Field R] [DecidableEq R] (M : Matrix R n m) :
     Vector (Vector R m) (m - rref_rank M) :=
   let E := rref_isRREF M

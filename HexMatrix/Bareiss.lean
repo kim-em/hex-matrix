@@ -46,6 +46,7 @@ namespace BareissData
 def sign (data : BareissData n) : Int :=
   if data.rowSwaps % 2 = 0 then 1 else -1
 
+@[expose]
 def lastDiag? (M : Matrix Int n n) : Option Int :=
   match n with
   | 0 => none
@@ -1044,6 +1045,7 @@ theorem pivotLoop_regular_branch_swap (fuel : Nat) (state : BareissState n)
 /-- `bareissArrayState` runs the matrix-level Bareiss elimination via `pivotLoop`
 and repackages the reduced result as a `BareissArrayState`, storing the matrix
 row-by-row via `matrixToRows`. -/
+@[expose]
 def bareissArrayState (M : Matrix Int n n) : BareissArrayState :=
   let state := pivotLoop n
     { step := 0
@@ -1059,11 +1061,12 @@ def bareissArrayState (M : Matrix Int n n) : BareissArrayState :=
 
 /-- `arraySign` is the determinant sign contributed by `rowSwaps` recorded row
 swaps, `1` for an even count and `-1` for an odd count. -/
-private def arraySign (rowSwaps : Nat) : Int :=
+def arraySign (rowSwaps : Nat) : Int :=
   if rowSwaps % 2 = 0 then 1 else -1
 
 /-- `arrayLastDiag?` reads the last diagonal entry `(n-1, n-1)` of the reduced
 rows, returning `none` when `n = 0`. -/
+@[expose]
 def arrayLastDiag? (rows : Array (Array Int)) (n : Nat) : Option Int :=
   match n with
   | 0 => none
@@ -1072,6 +1075,7 @@ def arrayLastDiag? (rows : Array (Array Int)) (n : Nat) : Option Int :=
 /-- `bareissArrayDet` assembles the determinant value from the final array
 state, returning `0` when elimination recorded a singular column and the signed
 last diagonal entry otherwise. -/
+@[expose]
 def bareissArrayDet (state : BareissArrayState) (n : Nat) : Int :=
   match state.singularStep with
   | some _ => 0

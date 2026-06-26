@@ -18,6 +18,7 @@ namespace Hex
 universe u
 
 /-- Dense `n × m` matrices over `R`, represented as vectors of rows. -/
+@[expose]
 abbrev Matrix (R : Type u) (n m : Nat) := Vector (Vector R m) n
 
 namespace Vector
@@ -634,6 +635,7 @@ def gramMatrix [Mul R] [Add R] [OfNat R 0] (M : Matrix R n m) : Matrix R n n :=
   rw [gramMatrix, getElem_ofFn]
 
 /-- Leading principal `(k + 1) × (k + 1)` submatrix of a square matrix. -/
+@[expose]
 def submatrix (M : Matrix R n n) (k : Fin n) : Matrix R (k.val + 1) (k.val + 1) :=
   ofFn fun i j =>
     let ii : Fin n := ⟨i.val, Nat.lt_of_lt_of_le i.isLt (Nat.succ_le_of_lt k.isLt)⟩
@@ -705,6 +707,7 @@ theorem submatrix_eq_leadingPrefix (M : Matrix R n n) (k : Fin n) :
 border row `i` and column `j`. For Bareiss applications `i` and `j` are in the
 trailing part, but the constructor is total and leaves that side condition to
 the invariant using it. -/
+@[expose]
 def borderedMinor (M : Matrix R n n) (k : Nat) (hk : k < n) (i j : Fin n) :
     Matrix R (k + 1) (k + 1) :=
   ofFn fun r c =>

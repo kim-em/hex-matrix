@@ -26,6 +26,7 @@ namespace Matrix
 variable {α : Type u}
 
 /-- Insert an element into a vector at a given position. -/
+@[expose]
 def insertAt (x : α) (v : Vector α n) (i : Fin (n + 1)) : Vector α (n + 1) :=
   ⟨(v.toList.insertIdx i.val x).toArray, by
     have hi : i.val ≤ v.toList.length := by
@@ -33,10 +34,12 @@ def insertAt (x : α) (v : Vector α n) (i : Fin (n + 1)) : Vector α (n + 1) :=
     simpa using List.length_insertIdx_of_le_length (a := x) (as := v.toList) hi⟩
 
 /-- The unique empty vector. -/
+@[expose]
 def emptyVec : Vector α 0 :=
   ⟨#[], rfl⟩
 
 /-- Enumerate the permutations of `Fin n` as length-`n` vectors. -/
+@[expose]
 def permutationVectors : (n : Nat) → List (Vector (Fin n) n)
   | 0 => [emptyVec]
   | n + 1 =>
@@ -47,6 +50,7 @@ def permutationVectors : (n : Nat) → List (Vector (Fin n) n)
         (permutationVectors n)
 
 /-- Count inversions in a permutation written as a list. -/
+@[expose]
 def inversionCount : List (Fin n) → Nat
   | [] => 0
   | x :: xs =>
@@ -265,24 +269,29 @@ private theorem inversionCount_swap_separated_parity {n : Nat}
       omega
 
 /-- The sign of a permutation vector, computed from inversion parity. -/
+@[expose]
 def detSign {R : Type u} [Lean.Grind.Ring R] {n : Nat} (perm : Vector (Fin n) n) : R :=
   if inversionCount perm.toList % 2 = 0 then 1 else -1
 
 /-- The unsigned product associated to a permutation vector. -/
+@[expose]
 def detProduct {R : Type u} [Lean.Grind.Ring R] {n : Nat}
     (M : Matrix R n n) (perm : Vector (Fin n) n) : R :=
   (List.finRange n).foldl (fun acc i => acc * M[i][perm[i]]) 1
 
 /-- The Leibniz summand associated to a permutation vector. -/
+@[expose]
 def detTerm {R : Type u} [Lean.Grind.Ring R] {n : Nat}
     (M : Matrix R n n) (perm : Vector (Fin n) n) : R :=
   detSign perm * detProduct M perm
 
 /-- The determinant of a dense square matrix, defined by the Leibniz formula. -/
+@[expose]
 def det {R : Type u} [Lean.Grind.Ring R] {n : Nat} (M : Matrix R n n) : R :=
   (permutationVectors n).foldl (fun acc perm => acc + detTerm M perm) 0
 
 /-- Embed `Fin n` into `Fin (n + 1)` while skipping one deleted index. -/
+@[expose]
 def skipIndex {n : Nat} (skip : Fin (n + 1)) (i : Fin n) : Fin (n + 1) :=
   if h : i.val < skip.val then
     ⟨i.val, by omega⟩
@@ -343,6 +352,7 @@ This normalizes bottom-right minors to leading prefixes. -/
   simp [skipIndex, Fin.last, i.isLt]
 
 /-- Delete one row and one column from an `(n + 1) × (n + 1)` matrix. -/
+@[expose]
 def deleteRowCol {R : Type u} {n : Nat} (M : Matrix R (n + 1) (n + 1))
     (row col : Fin (n + 1)) : Matrix R n n :=
   ofFn fun i j => M[skipIndex row i][skipIndex col j]
@@ -387,6 +397,7 @@ theorem deleteRowCol_transpose {R : Type u} {n : Nat}
   simp [deleteRowCol, ofFn, Matrix.transpose, Matrix.col]
 
 /-- The alternating sign used in signed cofactors. -/
+@[expose]
 def cofactorSign {R : Type u} [OfNat R 1] [Neg R] {n : Nat}
     (row col : Fin (n + 1)) : R :=
   if (row.val + col.val) % 2 = 0 then 1 else -1
@@ -406,6 +417,7 @@ This is the negative `simp` branch for signed cofactors. -/
   simp [cofactorSign, h]
 
 /-- The signed cofactor for the local Leibniz determinant. -/
+@[expose]
 def cofactor {R : Type u} [Lean.Grind.Ring R] {n : Nat}
     (M : Matrix R (n + 1) (n + 1)) (row col : Fin (n + 1)) : R :=
   cofactorSign row col * det (deleteRowCol M row col)
@@ -2428,6 +2440,7 @@ private theorem detProduct_rowScale {R : Type u} [Lean.Grind.CommRing R] {n : Na
 
 /-- The transposition of `Fin n` swapping `i` and `j`, sending `r` to `j` if
 `r = i`, to `i` if `r = j`, and to itself otherwise. -/
+@[expose]
 def finTranspose {n : Nat} (i j : Fin n) (r : Fin n) : Fin n :=
   if r = i then j else if r = j then i else r
 
@@ -2810,6 +2823,7 @@ private theorem transposePermutationValues_map_permutationVectors_perm {n : Nat}
 
 /-- Swap the values `i` and `j` inside a permutation vector, leaving positions
 fixed. This models the column permutation induced by exchanging two columns. -/
+@[expose]
 def swapPermutationValues {n : Nat}
     (perm : Vector (Fin n) n) (i j : Fin n) : Vector (Fin n) n :=
   perm.map (finTranspose i j)
@@ -3124,7 +3138,7 @@ private theorem inversePermutationValues_involutive {n : Nat}
       hi.symm
   exact hleft.trans h
 
-private def inversePermutationVector {n : Nat}
+def inversePermutationVector {n : Nat}
     (perm : Vector (Fin n) n) : Vector (Fin n) n :=
   if hnodup : perm.toList.Nodup then
     inversePermutationValues perm hnodup
@@ -3151,6 +3165,7 @@ private theorem inversePermutationVector_involutive_of_mem {n : Nat}
     (inversePermutationValues_nodup perm (permutationVectors_nodup hmem))]
   exact inversePermutationValues_involutive perm (permutationVectors_nodup hmem)
 
+@[expose]
 def composePermutationValues {n : Nat}
     (sigma tau : Vector (Fin n) n) : Vector (Fin n) n :=
   Vector.ofFn fun i => sigma[tau[i]]
@@ -4990,6 +5005,7 @@ theorem det_colAdd {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
   simpa [det] using permutationVectors_colAdd_sum M src dst c h
 
 /-- Replace one column of a square matrix by the supplied column function. -/
+@[expose]
 def colReplace {R : Type u} {n : Nat} (M : Matrix R n n) (dst : Fin n)
     (v : Fin n → R) : Matrix R n n :=
   Matrix.ofFn fun r c => if c = dst then v r else M[r][c]
@@ -5321,6 +5337,7 @@ theorem det_colReplace_sum_finRange {R : Type u} [Lean.Grind.CommRing R] {n m : 
 
 /-- Square matrix whose `j`-th column is the finite linear combination of the
 columns of `source` with coefficients from row `j` of `coeff`. -/
+@[expose]
 def columnSumMatrix {R : Type u} [Lean.Grind.CommRing R] {n m : Nat}
     (source coeff : Matrix R n m) : Matrix R n n :=
   ofFn fun r j =>
@@ -5476,6 +5493,7 @@ theorem det_colReplace_add_otherCols {R : Type u}
   grind
 
 /-- Square submatrix obtained by selecting an ordered tuple of columns. -/
+@[expose]
 def columnTupleMatrix {R : Type u} {n m : Nat}
     (A : Matrix R n m) (cols : Fin n → Fin m) : Matrix R n n :=
   ofFn fun r c => A[r][cols c]
@@ -5546,6 +5564,7 @@ theorem det_columnTupleMatrix_compose_perm
   exact det_colPermute_vector (columnTupleMatrix A (columnTupleVectorFn s)) sigma hsigma
 
 /-- Enumerate all ordered `n`-tuples of columns from `Fin m`. -/
+@[expose]
 def columnTupleVectors : (n m : Nat) → List (Vector (Fin m) n)
   | 0, _ => [emptyVec]
   | n + 1, m =>
@@ -5639,11 +5658,13 @@ private theorem columnTupleVectors_nodup {n m : Nat} :
       exact columnTupleVectors_flatMap_last_nodup (columnTupleVectors n m) ih
 
 /-- Product coefficient attached to an ordered column tuple in the Gram expansion. -/
+@[expose]
 def columnTupleCoeff {R : Type u} [Mul R] [OfNat R 1] {n m : Nat}
     (A : Matrix R n m) (cols : Vector (Fin m) n) : R :=
   (List.finRange n).foldl (fun acc i => acc * A[i][cols[i]]) 1
 
 /-- The determinant summand associated to an ordered column tuple. -/
+@[expose]
 def columnTupleExpansionTerm {R : Type u} [Lean.Grind.Ring R] {n m : Nat}
     (A : Matrix R n m) (cols : Vector (Fin m) n) : R :=
   columnTupleCoeff A cols * det (columnTupleMatrix A (columnTupleVectorFn cols))
@@ -6724,7 +6745,7 @@ that constrains the next entry to be strictly less than `bound`.
 /-- All strictly increasing length-`n` column tuples in `Fin m` whose entries
 are all `< bound`. The recursion appends a new largest element `c < bound` and
 recurses on the remaining prefix with the smaller bound `c.val`. -/
-private def selectedColumnTuplesUpTo (m : Nat) :
+def selectedColumnTuplesUpTo (m : Nat) :
     (n : Nat) → (bound : Nat) → List (Vector (Fin m) n)
   | 0, _ => [emptyVec]
   | n + 1, bound =>
@@ -6735,10 +6756,12 @@ private def selectedColumnTuplesUpTo (m : Nat) :
 /-- Enumerate all strictly increasing length-`n` column selections from `Fin m`.
 This list of orbit representatives drives the Cauchy-Binet grouping argument
 that re-folds the ordered-tuple Gram expansion as a sum of squared minors. -/
+@[expose]
 def selectedColumnTuples (n m : Nat) : List (Vector (Fin m) n) :=
   selectedColumnTuplesUpTo m n m
 
 /-- A column tuple is strictly increasing as a function `Fin n → Fin m`. -/
+@[expose]
 def IsStrictlyIncreasingColumnTuple {m n : Nat} (cols : Vector (Fin m) n) : Prop :=
   ∀ i j : Fin n, i.val < j.val → cols[i].val < cols[j].val
 
@@ -6989,12 +7012,13 @@ itself; for *injective* `cols`, the rank is moreover a bijection on
 
 /-- Count of indices whose `cols`-image has strictly smaller `Fin.val`
 than that at `i`. This is the natural-number form of the rank. -/
+@[expose]
 def columnRankNat {m n : Nat} (cols : Vector (Fin m) n) (i : Fin n) : Nat :=
   ((List.finRange n).filter fun j => decide (cols[j].val < cols[i].val)).length
 
 /-- The rank is always strictly less than `n`: index `i` itself is never
 in the filter, so the filter is a strict sublist of `finRange n`. -/
-private theorem columnRankNat_lt {m n : Nat} (cols : Vector (Fin m) n) (i : Fin n) :
+theorem columnRankNat_lt {m n : Nat} (cols : Vector (Fin m) n) (i : Fin n) :
     columnRankNat cols i < n := by
   have hwit :
       ∃ x ∈ List.finRange n, ¬ (decide (cols[x].val < cols[i].val) = true) := by
@@ -7010,6 +7034,7 @@ private theorem columnRankNat_lt {m n : Nat} (cols : Vector (Fin m) n) (i : Fin 
 `cols[i]` (number of strictly smaller positions). For an injective `cols`
 this is genuinely a permutation of `Fin n`; for a non-injective `cols` it
 is still well-defined but may have repeated values. -/
+@[expose]
 def sortInjPerm {m n : Nat} (cols : Vector (Fin m) n) : Vector (Fin n) n :=
   Vector.ofFn fun i => ⟨columnRankNat cols i, columnRankNat_lt cols i⟩
 
@@ -7023,6 +7048,7 @@ of `cols[i]` (the number of strictly smaller positions). -/
 /-- The canonical sorted version of `cols`: read `cols` through the inverse
 of `sortInjPerm`. For an injective `cols` this is strictly increasing; for
 a non-injective `cols` the value is well-defined but not meaningful. -/
+@[expose]
 def sortInjTuple {m n : Nat} (cols : Vector (Fin m) n) : Vector (Fin m) n :=
   Vector.ofFn fun r => cols[(inversePermutationVector (sortInjPerm cols))[r]]
 
@@ -7274,6 +7300,7 @@ injective, and its canonical sort/permutation pair recovers
 
 /-- Reconstruction map: given a sorted choice and a permutation, build
 an ordered column tuple. -/
+@[expose]
 def reconstructInjTuple {m n : Nat}
     (sel : Vector (Fin m) n) (perm : Vector (Fin n) n) : Vector (Fin m) n :=
   Vector.ofFn fun i => sel[perm[i]]
@@ -7825,6 +7852,7 @@ theorem det_gramMatrix_nonneg {n m : Nat} (A : Matrix Int n m) :
     (fun cols => det (columnTupleMatrix A (columnTupleVectorFn cols)))
 
 /-- The identity selection of the first `k` columns of an `n`-column matrix. -/
+@[expose]
 def firstColumns (k n : Nat) (hk : k ≤ n) : Vector (Fin n) k :=
   Vector.ofFn fun i => ⟨i.val, Nat.lt_of_lt_of_le i.isLt hk⟩
 
@@ -7917,6 +7945,7 @@ equal rows. These are the Mathlib-free local analogues of Mathlib's
 assembly. -/
 
 /-- Replace row `dst` of `M` with the vector `v`. -/
+@[expose]
 def setRow {R : Type u} {n m : Nat}
     (M : Matrix R n m) (dst : Fin n) (v : Vector R m) : Matrix R n m :=
   M.set dst v
@@ -7967,6 +7996,7 @@ theorem cofactor_setRow_self {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
 
 /-- Pair a row vector with a cofactor row of `M`. This is the scalar that
 appears in Laplace expansion after replacing the expanded row. -/
+@[expose]
 def cofactorRowPairing {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (M : Matrix R (n + 1) (n + 1)) (row : Fin (n + 1)) (v : Vector R (n + 1)) :
     R :=
@@ -8031,6 +8061,7 @@ theorem cofactorRowPairing_alien_eq_zero
 
 /-- The local adjugate matrix: entry `(i, j)` is the cofactor at row `j`,
 column `i` of `M`. This is the transpose of the cofactor matrix. -/
+@[expose]
 def adjugate {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (M : Matrix R (n + 1) (n + 1)) : Matrix R (n + 1) (n + 1) :=
   ofFn fun i j => cofactor M j i
@@ -8319,6 +8350,7 @@ The ordering proof `_hpq` is a phantom argument: it documents and pins the
 `p < q` precondition at call sites but is not consumed by the definition.
 This intentionally triggers the `unusedArguments` linter; the binder is kept
 deliberately (no `@[nolint]` exists in the Mathlib-free layer). -/
+@[expose]
 def skipIndex2 {n : Nat} (p q : Fin (n + 2)) (_hpq : p.val < q.val)
     (i : Fin n) : Fin (n + 2) :=
   if hi1 : i.val < p.val then
@@ -8377,6 +8409,7 @@ theorem skipIndex2_ne_q {n : Nat} (p q : Fin (n + 2)) (hpq : p.val < q.val)
 row `p`. Columns `0..n-1` carry the corresponding columns of `B`
 (restricted to rows other than `p`); the last column carries `v`
 (restricted to rows other than `p`). -/
+@[expose]
 def mMatrix {R : Type u} {n : Nat}
     (B : Matrix R (n + 2) n) (v : Vector R (n + 2)) (p : Fin (n + 2)) :
     Matrix R (n + 1) (n + 1) :=
@@ -8410,12 +8443,14 @@ theorem mMatrix_entry_last {R : Type u} {n : Nat}
 
 /-- The determinant of `mMatrix B v p`: the `(n + 1)`-maximal minor of
 `[B | v]` with row `p` deleted. -/
+@[expose]
 def mDet {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (B : Matrix R (n + 2) n) (v : Vector R (n + 2)) (p : Fin (n + 2)) : R :=
   det (mMatrix B v p)
 
 /-- The `n × n` matrix obtained from `B` by deleting rows `p` and `q`
 (in increasing-row order, with `p.val < q.val`). -/
+@[expose]
 def nMatrix {R : Type u} {n : Nat}
     (B : Matrix R (n + 2) n) (p q : Fin (n + 2)) (hpq : p.val < q.val) :
     Matrix R n n :=
@@ -8431,6 +8466,7 @@ entry `B[skipIndex2 p q hpq i][j]`. -/
 
 /-- The determinant of `nMatrix B p q hpq`: the `n × n` minor of `B`
 with rows `p, q` deleted. -/
+@[expose]
 def nDet {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (B : Matrix R (n + 2) n) (p q : Fin (n + 2)) (hpq : p.val < q.val) : R :=
   det (nMatrix B p q hpq)
@@ -9193,6 +9229,7 @@ private theorem det_setRow_setRow_nMatrix_r2_r0_r3_r1
 /-- The square matrix `[B | u | v]` formed by appending two vector columns to
 `B : Matrix R (n + 2) n`. The original `B` columns occupy positions
 `0..n-1`; `u` occupies column `n`; `v` occupies the last column. -/
+@[expose]
 def twoColMatrix {R : Type u} {n : Nat}
     (B : Matrix R (n + 2) n) (u v : Vector R (n + 2)) :
     Matrix R (n + 2) (n + 2) :=
@@ -9243,6 +9280,7 @@ theorem twoColMatrix_entry_last {R : Type u} {n : Nat}
   rw [dif_neg hlast_ne]
 
 /-- The determinant of `[B | u | v]`. -/
+@[expose]
 def twoColDet {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (B : Matrix R (n + 2) n) (u v : Vector R (n + 2)) : R :=
   det (twoColMatrix B u v)
@@ -9385,6 +9423,7 @@ theorem mDet_smul_v {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
 
 /-- The standard basis vector `e_q : Vector R (n + 2)` with value `1`
 at position `q` and `0` elsewhere. -/
+@[expose]
 def basisVec {R : Type u} [Zero R] [One R] {n : Nat} (q : Fin (n + 2)) :
     Vector R (n + 2) :=
   Vector.ofFn fun i => if i = q then (1 : R) else (0 : R)
