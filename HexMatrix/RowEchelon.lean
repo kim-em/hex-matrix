@@ -1,7 +1,11 @@
-import HexMatrix.Basic
-import Batteries.Data.List.Lemmas
-import Batteries.Data.List.Pairwise
-import Batteries.Data.List.Perm
+module
+
+public import HexMatrix.Basic
+public import Batteries.Data.List.Lemmas
+public import Batteries.Data.List.Pairwise
+public import Batteries.Data.List.Perm
+
+public section
 
 /-!
 Row operations and echelon-form data for `hex-matrix`.
@@ -18,6 +22,7 @@ universe u
 namespace Matrix
 
 /-- Swap rows `i` and `j` in a dense matrix. -/
+@[expose]
 def rowSwap (M : Matrix R n m) (i j : Fin n) : Matrix R n m :=
   (M.set i M[j]).set j M[i]
 
@@ -101,6 +106,7 @@ theorem rowSwap_diag_of_ne (M : Matrix R n n) {k pivot : Fin n}
   · simp [hkp]
 
 /-- Scale row `i` by `c`. -/
+@[expose]
 def rowScale [Mul R] (M : Matrix R n m) (i : Fin n) (c : R) : Matrix R n m :=
   M.set i <| Vector.ofFn fun k => c * M[i][k]
 
@@ -145,6 +151,7 @@ theorem row_rowScale_of_ne [Mul R] (M : Matrix R n m) {i r : Fin n} (c : R)
   simp [hri]
 
 /-- Replace row `dst` by `row dst + c * row src`. -/
+@[expose]
 def rowAdd [Mul R] [Add R] (M : Matrix R n m) (src dst : Fin n) (c : R) : Matrix R n m :=
   M.set dst <| Vector.ofFn fun k => M[dst][k] + c * M[src][k]
 
@@ -830,6 +837,7 @@ theorem rowAdd_right_inverse_preserve [Lean.Grind.Ring R]
   simpa [hS] using leftMul_right_inverse_preserve (S := S) (Sinv := Sinv) (T := T) hSSinv hT
 
 /-- Replace column `dst` by `col dst + c * col src`. -/
+@[expose]
 def colAdd [Mul R] [Add R] (M : Matrix R n m) (src dst : Fin m) (c : R) : Matrix R n m :=
   Matrix.ofFn fun i j => if j = dst then M[i][j] + c * M[i][src] else M[i][j]
 
@@ -1070,12 +1078,14 @@ variable [Mul R] [Add R] [OfNat R 0] [OfNat R 1]
 variable {M : Matrix R n m} {D : RowEchelonData R n m}
 
 /-- View a pivot-row index as a row index of the ambient matrix. -/
+@[expose]
 def pivotRow (E : IsEchelonForm M D) (i : Fin D.rank) : Fin n :=
   ⟨i.val, Nat.lt_of_lt_of_le i.isLt E.rank_le_n⟩
 
 /-- The pivot entries named by `pivotCols` are nonzero. This is the extra
 proof-facing contract needed by span solving: without it, the pivot-column
 division in `spanCoeffs` can divide by zero. -/
+@[expose]
 def HasNonzeroPivots (E : IsEchelonForm M D) : Prop :=
   ∀ i : Fin D.rank, D.echelon[E.pivotRow i][D.pivotCols.get i] ≠ 0
 
@@ -1126,6 +1136,7 @@ data but enables dot-notation (`E.freeColsList`) and fixes the implicit
 matrix/data parameters. This intentionally triggers the `unusedArguments`
 linter; the binder is kept deliberately (no `@[nolint]` exists in the
 Mathlib-free layer). -/
+@[expose]
 def freeColsList (_E : IsEchelonForm M D) : List (Fin m) :=
   (List.finRange m).filter fun j => j ∉ D.pivotCols.toList
 
@@ -1158,6 +1169,7 @@ theorem freeColsList_length (E : IsEchelonForm M D) :
   omega
 
 /-- Sorted complement of the pivot columns. -/
+@[expose]
 def freeCols (E : IsEchelonForm M D) : Vector (Fin m) (m - D.rank) :=
   ⟨E.freeColsList.toArray, by simpa using E.freeColsList_length⟩
 

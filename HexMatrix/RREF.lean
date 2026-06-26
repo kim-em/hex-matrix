@@ -1,6 +1,10 @@
-import Std
-import Batteries.Data.Vector.Lemmas
-import HexMatrix.RowEchelon
+module
+
+public import Std
+public import Batteries.Data.Vector.Lemmas
+public import HexMatrix.RowEchelon
+
+public section
 
 /-!
 Executable RREF, row-span, and nullspace routines for `hex-matrix`.
@@ -1817,7 +1821,8 @@ variable [Mul R] [Add R] [OfNat R 0] [OfNat R 1]
 variable {M : Matrix R n m} {D : RowEchelonData R n m}
 
 /-- The echelon-side coefficients selected by pivot coordinates. -/
-private def echelonCoeffs [Lean.Grind.Field R] (E : IsEchelonForm M D)
+@[expose]
+def echelonCoeffs [Lean.Grind.Field R] (E : IsEchelonForm M D)
     (v : Vector R m) : Vector R n :=
   Vector.ofFn fun i =>
     if h : i.val < D.rank then
@@ -1828,6 +1833,7 @@ private def echelonCoeffs [Lean.Grind.Field R] (E : IsEchelonForm M D)
       0
 
 /-- Coefficients for expressing `v` in the row span, if the echelon rows solve it. -/
+@[expose]
 def spanCoeffs [Lean.Grind.Field R] [DecidableEq R] (E : IsEchelonForm M D)
     (v : Vector R m) : Option (Vector R n) :=
   let coeffs := Matrix.transpose D.transform * E.echelonCoeffs v
@@ -1837,6 +1843,7 @@ def spanCoeffs [Lean.Grind.Field R] [DecidableEq R] (E : IsEchelonForm M D)
     none
 
 /-- Decidable row-span membership test derived from `spanCoeffs`. -/
+@[expose]
 def spanContains [Lean.Grind.Field R] [DecidableEq R] (E : IsEchelonForm M D)
     (v : Vector R m) : Bool :=
   (E.spanCoeffs v).isSome
@@ -2973,6 +2980,7 @@ theorem nullspace_complete {R : Type u} [Lean.Grind.Field R] {n m : Nat}
 end IsRREF
 
 /-- Convenience wrapper: compute row-span coefficients using `rref` internally. -/
+@[expose]
 def spanCoeffs [Lean.Grind.Field R] [DecidableEq R] (M : Matrix R n m) (v : Vector R m) :
     Option (Vector R n) :=
   let E := (rref_isRREF M).toIsEchelonForm
@@ -2987,6 +2995,7 @@ theorem spanCoeffs_sound [Lean.Grind.Field R] [DecidableEq R]
   exact (rref_isRREF M).toIsEchelonForm.spanCoeffs_sound v c h
 
 /-- Convenience wrapper: decide row-span membership using `rref` internally. -/
+@[expose]
 def spanContains [Lean.Grind.Field R] [DecidableEq R] (M : Matrix R n m) (v : Vector R m) :
     Bool :=
   let E := (rref_isRREF M).toIsEchelonForm

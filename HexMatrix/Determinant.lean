@@ -1,9 +1,13 @@
-import Std
-import Init.Grind.Ring.Field
-import Batteries.Data.Fin.Fold
-import Batteries.Data.List.Lemmas
-import Batteries.Data.Vector.Lemmas
-import HexMatrix.RowEchelon
+module
+
+public import Std
+public import Init.Grind.Ring.Field
+public import Batteries.Data.Fin.Fold
+public import Batteries.Data.List.Lemmas
+public import Batteries.Data.Vector.Lemmas
+public import HexMatrix.RowEchelon
+
+public section
 
 /-!
 Determinant routines for `hex-matrix`.
@@ -2424,7 +2428,7 @@ private theorem detProduct_rowScale {R : Type u} [Lean.Grind.CommRing R] {n : Na
 
 /-- The transposition of `Fin n` swapping `i` and `j`, sending `r` to `j` if
 `r = i`, to `i` if `r = j`, and to itself otherwise. -/
-private def finTranspose {n : Nat} (i j : Fin n) (r : Fin n) : Fin n :=
+def finTranspose {n : Nat} (i j : Fin n) (r : Fin n) : Fin n :=
   if r = i then j else if r = j then i else r
 
 /-- `finTranspose i j` sends `i` to `j`. -/
@@ -3147,7 +3151,7 @@ private theorem inversePermutationVector_involutive_of_mem {n : Nat}
     (inversePermutationValues_nodup perm (permutationVectors_nodup hmem))]
   exact inversePermutationValues_involutive perm (permutationVectors_nodup hmem)
 
-private def composePermutationValues {n : Nat}
+def composePermutationValues {n : Nat}
     (sigma tau : Vector (Fin n) n) : Vector (Fin n) n :=
   Vector.ofFn fun i => sigma[tau[i]]
 
@@ -5317,7 +5321,7 @@ theorem det_colReplace_sum_finRange {R : Type u} [Lean.Grind.CommRing R] {n m : 
 
 /-- Square matrix whose `j`-th column is the finite linear combination of the
 columns of `source` with coefficients from row `j` of `coeff`. -/
-private def columnSumMatrix {R : Type u} [Lean.Grind.CommRing R] {n m : Nat}
+def columnSumMatrix {R : Type u} [Lean.Grind.CommRing R] {n m : Nat}
     (source coeff : Matrix R n m) : Matrix R n n :=
   ofFn fun r j =>
     (List.finRange m).foldl (fun acc k => acc + coeff[j][k] * source[r][k]) 0
@@ -5484,6 +5488,7 @@ def columnTupleMatrix {R : Type u} {n m : Nat}
   simp [columnTupleMatrix, ofFn]
 
 /-- Interpret an ordered column tuple vector as its column-selection function. -/
+@[expose]
 def columnTupleVectorFn {n m : Nat} (cols : Vector (Fin m) n) : Fin n → Fin m :=
   fun i => cols[i]
 
@@ -6984,7 +6989,7 @@ itself; for *injective* `cols`, the rank is moreover a bijection on
 
 /-- Count of indices whose `cols`-image has strictly smaller `Fin.val`
 than that at `i`. This is the natural-number form of the rank. -/
-private def columnRankNat {m n : Nat} (cols : Vector (Fin m) n) (i : Fin n) : Nat :=
+def columnRankNat {m n : Nat} (cols : Vector (Fin m) n) (i : Fin n) : Nat :=
   ((List.finRange n).filter fun j => decide (cols[j].val < cols[i].val)).length
 
 /-- The rank is always strictly less than `n`: index `i` itself is never

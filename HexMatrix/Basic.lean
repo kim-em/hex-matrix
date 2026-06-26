@@ -1,4 +1,8 @@
-import Batteries.Data.List.Lemmas
+module
+
+public import Batteries.Data.List.Lemmas
+
+public section
 
 /-!
 Core dense matrix definitions for `hex-matrix`.
@@ -19,6 +23,7 @@ abbrev Matrix (R : Type u) (n m : Nat) := Vector (Vector R m) n
 namespace Vector
 
 /-- Dot product of two vectors. -/
+@[expose]
 def dotProduct [Mul R] [Add R] [OfNat R 0] (u v : Vector R n) : R :=
   (List.finRange n).foldl (fun acc i => acc + u[i] * v[i]) 0
 
@@ -77,6 +82,7 @@ end Vector
 namespace Matrix
 
 /-- Build a matrix from an entry function. -/
+@[expose]
 def ofFn (f : Fin n → Fin m → R) : Matrix R n m :=
   Vector.ofFn fun i => Vector.ofFn fun j => f i j
 
@@ -86,6 +92,7 @@ def ofFn (f : Fin n → Fin m → R) : Matrix R n m :=
   simp [ofFn]
 
 /-- The `i`-th row of a matrix. -/
+@[expose]
 def row (M : Matrix R n m) (i : Fin n) : Vector R m :=
   M[i]
 
@@ -95,6 +102,7 @@ def row (M : Matrix R n m) (i : Fin n) : Vector R m :=
   rfl
 
 /-- The `j`-th column of a matrix. -/
+@[expose]
 def col (M : Matrix R n m) (j : Fin m) : Vector R n :=
   Vector.ofFn fun i => M[i][j]
 
@@ -104,6 +112,7 @@ def col (M : Matrix R n m) (j : Fin m) : Vector R n :=
   simp [col]
 
 /-- The transpose of a dense matrix. -/
+@[expose]
 def transpose (M : Matrix R n m) : Matrix R m n :=
   Vector.ofFn fun j => col M j
 
@@ -132,6 +141,7 @@ instance [OfNat R 0] : Zero (Matrix R n m) where
   zero := Matrix.zero
 
 /-- The identity matrix. -/
+@[expose]
 protected def identity [OfNat R 0] [OfNat R 1] : Matrix R n n :=
   ofFn fun i j => if i = j then 1 else 0
 
@@ -139,6 +149,7 @@ instance [OfNat R 0] [OfNat R 1] : One (Matrix R n n) where
   one := Matrix.identity
 
 /-- Dot product of two vectors. -/
+@[expose]
 def dot [Mul R] [Add R] [OfNat R 0] (u v : Vector R n) : R :=
   Hex.Vector.dotProduct u v
 
@@ -155,11 +166,13 @@ theorem dot_sub_smul_eq_zero_rat (u v w : Vector Rat n) (c : Rat)
   grind
 
 /-- Multiply a matrix by a column vector. -/
+@[expose]
 def mulVec [Mul R] [Add R] [OfNat R 0] (M : Matrix R n m) (v : Vector R m) :
     Vector R n :=
   Vector.ofFn fun i => dot (row M i) v
 
 /-- Multiply two matrices. -/
+@[expose]
 def mul [Mul R] [Add R] [OfNat R 0] (M : Matrix R n m) (N : Matrix R m k) :
     Matrix R n k :=
   ofFn fun i j => dot (row M i) (col N j)
@@ -604,6 +617,7 @@ def ratNormSq (v : Vector Rat n) : Rat :=
   Hex.Vector.ratNormSq v
 
 /-- Gram matrix of the rows of a dense matrix. -/
+@[expose]
 def gramMatrix [Mul R] [Add R] [OfNat R 0] (M : Matrix R n m) : Matrix R n n :=
   ofFn fun i j => Hex.Vector.dotProduct (row M i) (row M j)
 
@@ -622,6 +636,7 @@ def submatrix (M : Matrix R n n) (k : Fin n) : Matrix R (k.val + 1) (k.val + 1) 
 
 /-- Leading principal `k × k` prefix of a square matrix. This variant includes
 the empty prefix and is convenient for Bareiss pivot/minor statements. -/
+@[expose]
 def leadingPrefix (M : Matrix R n n) (k : Nat) (hk : k ≤ n) : Matrix R k k :=
   ofFn fun i j =>
     let ii : Fin n := ⟨i.val, Nat.lt_of_lt_of_le i.isLt hk⟩
@@ -629,6 +644,7 @@ def leadingPrefix (M : Matrix R n n) (k : Nat) (hk : k ≤ n) : Matrix R k k :=
     M[ii][jj]
 
 /-- The first `k` rows of a matrix, retaining all source columns. -/
+@[expose]
 def leadingRows (M : Matrix R n m) (k : Nat) (hk : k ≤ n) : Matrix R k m :=
   ofFn fun i j =>
     let ii : Fin n := ⟨i.val, Nat.lt_of_lt_of_le i.isLt hk⟩

@@ -1,4 +1,8 @@
-import HexMatrix.Determinant
+module
+
+public import HexMatrix.Determinant
+
+public section
 
 /-!
 Executable Bareiss determinant algorithm for `hex-matrix`.

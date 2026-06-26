@@ -1,8 +1,12 @@
-import HexMatrix.Basic
-import HexMatrix.Determinant
-import HexMatrix.RowEchelon
-import HexMatrix.RREF
-import HexMatrix.Bareiss
+module
+
+public import HexMatrix.Basic
+public import HexMatrix.Determinant
+public import HexMatrix.RowEchelon
+public import HexMatrix.RREF
+public import HexMatrix.Bareiss
+
+public section
 
 /-!
 The `HexMatrix` library exposes the dense matrix core used throughout the
