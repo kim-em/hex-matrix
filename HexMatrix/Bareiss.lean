@@ -123,7 +123,7 @@ this function performs no runtime divisibility check: the `@[extern]`
 binding compiles the call directly to `lean_int_div_exact`, matching
 `Int.divExact`. The Lean-level reduction is the same `num / denom` that
 `Int.divExact` uses as its logical model. -/
-@[extern "lean_int_div_exact"]
+@[expose, extern "lean_int_div_exact"]
 def exactDiv (num denom : @& Int) : Int := num / denom
 
 /-- When divisibility is known, `exactDiv` is the GMP-backed exact quotient. -/
