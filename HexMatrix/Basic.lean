@@ -66,14 +66,17 @@ theorem dotProduct_sub_smul_eq_zero_rat (u v w : Vector Rat n) (c : Rat)
   grind
 
 /-- Squared Euclidean norm of a vector. -/
+@[expose]
 def normSq [Mul R] [Add R] [OfNat R 0] (v : Vector R n) : R :=
   dotProduct v v
 
 /-- Squared Euclidean norm specialized to integer vectors. -/
+@[expose]
 def intNormSq (v : Vector Int n) : Int :=
   normSq v
 
 /-- Squared Euclidean norm specialized to rational vectors. -/
+@[expose]
 def ratNormSq (v : Vector Rat n) : Rat :=
   normSq v
 
@@ -605,14 +608,17 @@ theorem sub_identity_mulVec [Lean.Grind.Ring R] (Q : Matrix R n n) (v : Vector R
           grind
 
 /-- Squared Euclidean norm of a vector. -/
+@[expose]
 def normSq [Mul R] [Add R] [OfNat R 0] (v : Vector R n) : R :=
   Hex.Vector.normSq v
 
 /-- Squared Euclidean norm specialized to integer vectors. -/
+@[expose]
 def intNormSq (v : Vector Int n) : Int :=
   Hex.Vector.intNormSq v
 
 /-- Squared Euclidean norm specialized to rational vectors. -/
+@[expose]
 def ratNormSq (v : Vector Rat n) : Rat :=
   Hex.Vector.ratNormSq v
 
