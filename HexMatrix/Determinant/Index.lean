@@ -434,8 +434,7 @@ theorem permutationVectors_complete {n : Nat} {perm : Vector (Fin n) n}
         apply List.eq_nil_iff_length_eq_zero.mpr
         simp [Vector.length_toList]
       have hperm : perm = emptyVec := by
-        apply Vector.ext
-        intro i hi
+        ext i hi
         omega
       simp [permutationVectors, hperm]
   | succ n ih =>
@@ -664,8 +663,7 @@ theorem detSign_identity {R : Type u} [Lean.Grind.Ring R] (n : Nat) :
   induction n with
   | zero =>
       have hvec : (Vector.ofFn fun i : Fin 0 => i) = emptyVec := by
-        apply Vector.ext
-        intro i hi
+        ext i hi
         omega
       simp [hvec, detSign, emptyVec, inversionCount]
   | succ n ih =>
@@ -673,12 +671,10 @@ theorem detSign_identity {R : Type u} [Lean.Grind.Ring R] (n : Nat) :
           (Vector.ofFn fun i : Fin (n + 1) => i) =
             insertAt (Fin.last n)
               ((Vector.ofFn fun i : Fin n => i).map Fin.castSucc) (Fin.last n) := by
-        apply Vector.ext
-        intro k hk
+        ext k hk
         by_cases hlast : k = n
         · subst k
           simp [insertAt, List.getElem_insertIdx_self]
-          exact Fin.ext rfl
         · have hklt : k < n := by omega
           simp [insertAt, List.getElem_insertIdx_of_lt, hklt]
       rw [hvec, detSign_insertAt_last]

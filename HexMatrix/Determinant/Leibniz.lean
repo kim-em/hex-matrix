@@ -6,6 +6,7 @@ public import Batteries.Data.Fin.Fold
 public import Batteries.Data.List.Lemmas
 public import Batteries.Data.Vector.Lemmas
 public import HexMatrix.RowEchelon
+public import HexMatrix.Submatrix
 
 public section
 
@@ -359,10 +360,7 @@ This is the minor normalization used by bottom-right cofactor expansion. -/
     (M : Matrix R (n + 1) (n + 1)) :
     deleteRowCol M (Fin.last n) (Fin.last n) =
       leadingPrefix M n (Nat.le_succ n) := by
-  apply Vector.ext
-  intro i hi
-  apply Vector.ext
-  intro j hj
+  ext i hi j hj
   let ii : Fin n := ⟨i, hi⟩
   let jj : Fin n := ⟨j, hj⟩
   change (deleteRowCol M (Fin.last n) (Fin.last n))[ii][jj] =
@@ -375,10 +373,7 @@ the minor obtained by deleting row `col` and column `row` before transposing. -/
 theorem deleteRowCol_transpose {R : Type u} {n : Nat}
     (M : Matrix R (n + 1) (n + 1)) (row col : Fin (n + 1)) :
     deleteRowCol M.transpose row col = (deleteRowCol M col row).transpose := by
-  apply Vector.ext
-  intro i hi
-  apply Vector.ext
-  intro j hj
+  ext i hi j hj
   let ii : Fin n := ⟨i, hi⟩
   let jj : Fin n := ⟨j, hj⟩
   change (deleteRowCol M.transpose row col)[ii][jj] =

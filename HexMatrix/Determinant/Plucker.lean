@@ -48,10 +48,7 @@ theorem deleteRowCol_setRow_self {R : Type u} {n : Nat}
     (M : Matrix R (n + 1) (n + 1)) (dst col : Fin (n + 1))
     (v : Vector R (n + 1)) :
     deleteRowCol (setRow M dst v) dst col = deleteRowCol M dst col := by
-  apply Vector.ext
-  intro i hi
-  apply Vector.ext
-  intro j hj
+  ext i hi j hj
   let ii : Fin n := ⟨i, hi⟩
   let jj : Fin n := ⟨j, hj⟩
   change (deleteRowCol (setRow M dst v) dst col)[ii][jj] =
@@ -157,17 +154,21 @@ theorem mul_adjugate_apply {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (M : Matrix R (n + 1) (n + 1)) (i j : Fin (n + 1)) :
     (M * adjugate M)[i][j] =
       if i = j then det M else 0 := by
-  have hmul : (M * adjugate M)[i][j] = Matrix.dot (row M i) (col (adjugate M) j) := by
+  have hmul :
+      (M * adjugate M)[i][j] =
+        Hex.Vector.dotProduct (row M i) (col (adjugate M) j) := by
     change (Matrix.mul M (adjugate M))[i][j] = _
     unfold Matrix.mul
-    show (ofFn fun i j => Matrix.dot (row M i) (col (adjugate M) j))[i][j] = _
+    show
+      (ofFn fun i j => Hex.Vector.dotProduct (row M i) (col (adjugate M) j))[i][j] =
+        _
     simp [ofFn]
   have hentry :
       (M * adjugate M)[i][j] =
         (List.finRange (n + 1)).foldl
           (fun acc k => acc + M[i][k] * cofactor M j k) 0 := by
     rw [hmul]
-    unfold Matrix.dot Hex.Vector.dotProduct
+    unfold Hex.Vector.dotProduct
     apply foldl_acc_congr
     intro acc k _hmem
     congr 1
@@ -200,7 +201,7 @@ theorem adjugate_mul_apply {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
       change (Matrix.mul (adjugate M) M)[i][j] = _
       unfold Matrix.mul
       rw [getElem_ofFn]
-      unfold Matrix.dot Hex.Vector.dotProduct
+      unfold Hex.Vector.dotProduct
       apply foldl_acc_congr
       intro acc k _hmem
       have hrow : (row (adjugate M) i)[k] = (adjugate M)[i][k] := rfl
@@ -214,7 +215,7 @@ theorem adjugate_mul_apply {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
       change (Matrix.mul M.transpose (adjugate M.transpose))[j][i] = _
       unfold Matrix.mul
       rw [getElem_ofFn]
-      unfold Matrix.dot Hex.Vector.dotProduct
+      unfold Hex.Vector.dotProduct
       apply foldl_acc_congr
       intro acc k _hmem
       have hrow : (row M.transpose j)[k] = M[k][j] := by
@@ -307,10 +308,7 @@ private theorem columnTupleMatrix_eq_ofFn_ofFn
     {R : Type u} {n : Nat} (M : Matrix R n n) (cols : Fin n → Fin n) :
     columnTupleMatrix M cols =
       (ofFn fun r c => M[r][(Vector.ofFn cols)[c]] : Matrix R n n) := by
-  apply Vector.ext
-  intro r hr
-  apply Vector.ext
-  intro c hc
+  ext r hr c hc
   show (columnTupleMatrix M cols)[(⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)] =
     (ofFn (fun r c => M[r][(Vector.ofFn cols)[c]]) : Matrix R n n)[
       (⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)]
@@ -349,10 +347,7 @@ private theorem mul_eq_columnSumMatrix_transpose
     {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (M N : Matrix R n n) :
     M * N = columnSumMatrix M N.transpose := by
-  apply Vector.ext
-  intro r hr
-  apply Vector.ext
-  intro c hc
+  ext r hr c hc
   let rr : Fin n := ⟨r, hr⟩
   let cc : Fin n := ⟨c, hc⟩
   show (M * N)[rr][cc] = (columnSumMatrix M N.transpose)[rr][cc]
@@ -360,7 +355,7 @@ private theorem mul_eq_columnSumMatrix_transpose
   change (Matrix.mul M N)[rr][cc] = _
   unfold Matrix.mul ofFn
   rw [vector_ofFn_getElem_fin, vector_ofFn_getElem_fin]
-  unfold Matrix.dot Hex.Vector.dotProduct
+  unfold Hex.Vector.dotProduct
   apply foldl_det_sum_congr
   intro k _
   have hrow : (row M rr)[k] = M[rr][k] := by simp [row]
@@ -608,8 +603,7 @@ private theorem rowMoveUp_row_of_lt {R : Type u} {n m : Nat}
   | succ k ih =>
       rw [rowMoveUp_succ]
       rw [ih (rowSwap M ⟨src + k, by omega⟩ ⟨src + k + 1, h⟩) (by omega)]
-      apply Vector.ext
-      intro j hj
+      ext j hj
       let jj : Fin m := ⟨j, hj⟩
       show (rowSwap M ⟨src + k, by omega⟩ ⟨src + k + 1, h⟩)[i][jj] = M[i][jj]
       rw [rowSwap_get]
@@ -631,8 +625,7 @@ private theorem rowMoveUp_row_of_gt {R : Type u} {n m : Nat}
       rw [rowMoveUp_succ]
       rw [ih (rowSwap M ⟨src + k, by omega⟩ ⟨src + k + 1, h⟩) (by omega)
         (by omega)]
-      apply Vector.ext
-      intro j hj
+      ext j hj
       let jj : Fin m := ⟨j, hj⟩
       show (rowSwap M ⟨src + k, by omega⟩ ⟨src + k + 1, h⟩)[i][jj] = M[i][jj]
       rw [rowSwap_get]
@@ -655,8 +648,7 @@ private theorem rowMoveUp_row_eq_src {R : Type u} {n m : Nat}
   | succ k ih =>
       rw [rowMoveUp_succ]
       rw [ih (rowSwap M ⟨src + k, by omega⟩ ⟨src + k + 1, h⟩) (by omega)]
-      apply Vector.ext
-      intro j hj
+      ext j hj
       let jj : Fin m := ⟨j, hj⟩
       show (rowSwap M ⟨src + k, by omega⟩ ⟨src + k + 1, h⟩)[
           (⟨src + k, by omega⟩ : Fin n)][jj]
@@ -688,8 +680,7 @@ private theorem rowMoveUp_row_between {R : Type u} {n m : Nat}
       · -- Inductive case: still in the move interval after one swap
         rw [ih (rowSwap M ⟨src + k, by omega⟩ ⟨src + k + 1, h⟩) (by omega)
           h_lt]
-        apply Vector.ext
-        intro j hj
+        ext j hj
         let jj : Fin m := ⟨j, hj⟩
         show (rowSwap M ⟨src + k, by omega⟩ ⟨src + k + 1, h⟩)[
             (⟨i.val - 1, by have := i.isLt; omega⟩ : Fin n)][jj] =
@@ -710,8 +701,7 @@ private theorem rowMoveUp_row_between {R : Type u} {n m : Nat}
         rw [rowMoveUp_row_of_gt
           (rowSwap M ⟨src + k, by omega⟩ ⟨src + k + 1, h⟩) src k
           (by omega) i h_gt]
-        apply Vector.ext
-        intro j hj
+        ext j hj
         let jj : Fin m := ⟨j, hj⟩
         show (rowSwap M ⟨src + k, by omega⟩ ⟨src + k + 1, h⟩)[i][jj] =
           M[(⟨i.val - 1, by have := i.isLt; omega⟩ : Fin n)][jj]
@@ -748,11 +738,11 @@ private theorem rowMoveUp_setRow_nMatrix_replace_first
     rowMoveUp (setRow (nMatrix B a b hab) s B[a]) a.val
         (t.val - a.val - 2) hsk =
       nMatrix B b t hbt := by
-  apply Vector.ext
-  intro i hi
+  ext i hi j hj
   let ii : Fin n := ⟨i, hi⟩
   show (rowMoveUp (setRow (nMatrix B a b hab) s B[a]) a.val
-        (t.val - a.val - 2) hsk)[ii] = (nMatrix B b t hbt)[ii]
+        (t.val - a.val - 2) hsk)[ii][(⟨j, hj⟩ : Fin n)] =
+    (nMatrix B b t hbt)[ii][(⟨j, hj⟩ : Fin n)]
   by_cases h_below : ii.val < a.val
   · -- Below the move interval: both rowMoveUp and setRow leave the row alone.
     have hii_ne_s : ii ≠ s := by
@@ -764,8 +754,6 @@ private theorem rowMoveUp_setRow_nMatrix_replace_first
     rw [rowMoveUp_row_of_lt (setRow (nMatrix B a b hab) s B[a]) a.val
           (t.val - a.val - 2) hsk ii h_below,
         setRow_row_ne (nMatrix B a b hab) s ii B[a] hii_ne_s]
-    apply Vector.ext
-    intro j hj
     let jj : Fin n := ⟨j, hj⟩
     show (nMatrix B a b hab)[ii][jj] = (nMatrix B b t hbt)[ii][jj]
     rw [nMatrix_entry, nMatrix_entry]
@@ -795,8 +783,6 @@ private theorem rowMoveUp_setRow_nMatrix_replace_first
                   (setRow (nMatrix B a b hab) s B[a])[i]) hidx_eq
           _ = B[a] := setRow_get_self _ _ _
       rw [h_row_eq]
-      apply Vector.ext
-      intro j hj
       let jj : Fin n := ⟨j, hj⟩
       show B[a][jj] = (nMatrix B b t hbt)[ii][jj]
       rw [nMatrix_entry]
@@ -818,8 +804,6 @@ private theorem rowMoveUp_setRow_nMatrix_replace_first
           have hv : ii.val = s.val := congrArg Fin.val he
           rw [hs] at hv; omega
         rw [setRow_row_ne (nMatrix B a b hab) s ii B[a] hii_ne_s]
-        apply Vector.ext
-        intro j hj
         let jj : Fin n := ⟨j, hj⟩
         show (nMatrix B a b hab)[ii][jj] = (nMatrix B b t hbt)[ii][jj]
         rw [nMatrix_entry, nMatrix_entry]
@@ -850,8 +834,6 @@ private theorem rowMoveUp_setRow_nMatrix_replace_first
           have : ii.val - 1 = t.val - 2 := hv
           omega
         rw [setRow_row_ne (nMatrix B a b hab) s j_minus B[a] hj_ne_s]
-        apply Vector.ext
-        intro j hj
         let jj : Fin n := ⟨j, hj⟩
         show (nMatrix B a b hab)[j_minus][jj] = (nMatrix B b t hbt)[ii][jj]
         rw [nMatrix_entry, nMatrix_entry]
@@ -895,12 +877,12 @@ private theorem rowMoveUp_setRow_nMatrix_replace_second
     rowMoveUp (setRow (nMatrix B a b hab) s B[b]) (b.val - 1)
         (t.val - b.val - 1) hsk =
       nMatrix B a t (Nat.lt_trans hab hbt) := by
-  apply Vector.ext
-  intro i hi
+  ext i hi j hj
   let ii : Fin n := ⟨i, hi⟩
   have hat : a.val < t.val := Nat.lt_trans hab hbt
   show (rowMoveUp (setRow (nMatrix B a b hab) s B[b]) (b.val - 1)
-        (t.val - b.val - 1) hsk)[ii] = (nMatrix B a t hat)[ii]
+        (t.val - b.val - 1) hsk)[ii][(⟨j, hj⟩ : Fin n)] =
+    (nMatrix B a t hat)[ii][(⟨j, hj⟩ : Fin n)]
   by_cases h_below : ii.val < b.val - 1
   · -- Below the move interval.
     have hii_ne_s : ii ≠ s := by
@@ -910,8 +892,6 @@ private theorem rowMoveUp_setRow_nMatrix_replace_second
     rw [rowMoveUp_row_of_lt (setRow (nMatrix B a b hab) s B[b]) (b.val - 1)
           (t.val - b.val - 1) hsk ii h_below,
         setRow_row_ne (nMatrix B a b hab) s ii B[b] hii_ne_s]
-    apply Vector.ext
-    intro j hj
     let jj : Fin n := ⟨j, hj⟩
     show (nMatrix B a b hab)[ii][jj] = (nMatrix B a t hat)[ii][jj]
     rw [nMatrix_entry, nMatrix_entry]
@@ -948,8 +928,6 @@ private theorem rowMoveUp_setRow_nMatrix_replace_second
                   (setRow (nMatrix B a b hab) s B[b])[i]) hidx_eq
           _ = B[b] := setRow_get_self _ _ _
       rw [h_row_eq]
-      apply Vector.ext
-      intro j hj
       let jj : Fin n := ⟨j, hj⟩
       show B[b][jj] = (nMatrix B a t hat)[ii][jj]
       rw [nMatrix_entry]
@@ -975,8 +953,6 @@ private theorem rowMoveUp_setRow_nMatrix_replace_second
           have hv : ii.val = s.val := congrArg Fin.val he
           rw [hs] at hv; omega
         rw [setRow_row_ne (nMatrix B a b hab) s ii B[b] hii_ne_s]
-        apply Vector.ext
-        intro j hj
         let jj : Fin n := ⟨j, hj⟩
         show (nMatrix B a b hab)[ii][jj] = (nMatrix B a t hat)[ii][jj]
         rw [nMatrix_entry, nMatrix_entry]
@@ -1006,8 +982,6 @@ private theorem rowMoveUp_setRow_nMatrix_replace_second
           have : ii.val - 1 = t.val - 2 := hv
           omega
         rw [setRow_row_ne (nMatrix B a b hab) s j_minus B[b] hj_ne_s]
-        apply Vector.ext
-        intro j hj
         let jj : Fin n := ⟨j, hj⟩
         show (nMatrix B a b hab)[j_minus][jj] = (nMatrix B a t hat)[ii][jj]
         rw [nMatrix_entry, nMatrix_entry]
@@ -1164,11 +1138,10 @@ private theorem rowMoveUp_setRow_of_gt {R : Type u} {n m : Nat}
     (M : Matrix R n m) (src k : Nat) (h : src + k < n) (j : Fin n)
     (v : Vector R m) (hj : src + k < j.val) :
     rowMoveUp (setRow M j v) src k h = setRow (rowMoveUp M src k h) j v := by
-  apply Vector.ext
-  intro i hi
+  ext i hi jcol hjcol
   let ii : Fin n := ⟨i, hi⟩
-  show (rowMoveUp (setRow M j v) src k h)[ii] =
-    (setRow (rowMoveUp M src k h) j v)[ii]
+  show (rowMoveUp (setRow M j v) src k h)[ii][(⟨jcol, hjcol⟩ : Fin m)] =
+    (setRow (rowMoveUp M src k h) j v)[ii][(⟨jcol, hjcol⟩ : Fin m)]
   by_cases h_eq_j : ii = j
   · -- ii = j: both sides evaluate to v
     have hii_gt : src + k < ii.val := by
@@ -1368,10 +1341,7 @@ theorem deleteRowCol_twoColMatrix_last_eq_mMatrix {R : Type u} {n : Nat}
     (B : Matrix R (n + 2) n) (u v : Vector R (n + 2)) (p : Fin (n + 2)) :
     deleteRowCol (twoColMatrix B u v) p (Fin.last (n + 1)) =
       mMatrix B u p := by
-  apply Vector.ext
-  intro i hi
-  apply Vector.ext
-  intro j hj
+  ext i hi j hj
   let ii : Fin (n + 1) := ⟨i, hi⟩
   let jj : Fin (n + 1) := ⟨j, hj⟩
   change (deleteRowCol (twoColMatrix B u v) p (Fin.last (n + 1)))[ii][jj] =
@@ -1440,10 +1410,7 @@ theorem mMatrix_eq_colReplace_last {R : Type u} {n : Nat}
     mMatrix B v p =
       colReplace (mMatrix B w p) (Fin.last n)
         (fun i : Fin (n + 1) => v[skipIndex p i]) := by
-  apply Vector.ext
-  intro i hi
-  apply Vector.ext
-  intro j hj
+  ext i hi j hj
   change (mMatrix B v p)[(⟨i, hi⟩ : Fin (n + 1))][(⟨j, hj⟩ : Fin (n + 1))] =
     (colReplace (mMatrix B w p) (Fin.last n)
         (fun i : Fin (n + 1) => v[skipIndex p i]))[(⟨i, hi⟩ : Fin (n + 1))][(⟨j, hj⟩ : Fin (n + 1))]
@@ -1768,10 +1735,7 @@ theorem deleteRowCol_mMatrix_at_q_minus_one_eq_nMatrix_of_lt
     deleteRowCol (mMatrix B v p)
         (⟨q.val - 1, by have := q.isLt; omega⟩ : Fin (n + 1)) (Fin.last n) =
       nMatrix B p q hpq := by
-  apply Vector.ext
-  intro i hi
-  apply Vector.ext
-  intro j hj
+  ext i hi j hj
   let ii : Fin n := ⟨i, hi⟩
   let jj : Fin n := ⟨j, hj⟩
   change (deleteRowCol (mMatrix B v p)
@@ -1864,10 +1828,7 @@ theorem deleteRowCol_mMatrix_at_q_eq_nMatrix_of_gt
     deleteRowCol (mMatrix B v p)
         (⟨q.val, by have := p.isLt; omega⟩ : Fin (n + 1)) (Fin.last n) =
       nMatrix B q p hqp := by
-  apply Vector.ext
-  intro i hi
-  apply Vector.ext
-  intro j hj
+  ext i hi j hj
   let ii : Fin n := ⟨i, hi⟩
   let jj : Fin n := ⟨j, hj⟩
   change (deleteRowCol (mMatrix B v p)
@@ -2225,7 +2186,7 @@ private theorem mul_apply_foldl
   change (Matrix.mul A B)[i][j] = _
   unfold Matrix.mul
   rw [getElem_ofFn]
-  unfold Matrix.dot Hex.Vector.dotProduct
+  unfold Hex.Vector.dotProduct
   apply foldl_acc_congr
   intro acc l _hmem
   rw [row_getElem, col_getElem]

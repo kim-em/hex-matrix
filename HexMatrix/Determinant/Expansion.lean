@@ -1,6 +1,7 @@
 module
 
 public import HexMatrix.Determinant.Permutation
+public import HexMatrix.Gram
 import all HexMatrix.Determinant.Permutation
 
 public section
@@ -258,10 +259,7 @@ private theorem det_colReplace_zero {R : Type u} [Lean.Grind.CommRing R] {n : Na
 theorem colReplace_self {R : Type u} {n : Nat}
     (M : Matrix R n n) (dst : Fin n) :
     colReplace M dst (fun r => M[r][dst]) = M := by
-  apply Vector.ext
-  intro r hr
-  apply Vector.ext
-  intro c hc
+  ext r hr c hc
   change (colReplace M dst (fun r => M[r][dst]))[(⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)] =
     M[(⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)]
   rw [colReplace_get]
@@ -363,10 +361,7 @@ private theorem colReplace_columnSumMatrix_self
         (fun r => (List.finRange m).foldl
           (fun acc k => acc + coeff[dst][k] * source[r][k]) 0) =
       columnSumMatrix source coeff := by
-  apply Vector.ext
-  intro r hr
-  apply Vector.ext
-  intro c hc
+  ext r hr c hc
   change
     (colReplace (columnSumMatrix source coeff) dst
         (fun r => (List.finRange m).foldl
@@ -421,10 +416,7 @@ theorem det_eq_zero_of_row_eq {R : Type u} [Lean.Grind.CommRing R] {n : Nat}
     (hrow : M[src] = M[dst]) :
     det M = 0 := by
   have hdup : rowAddDuplicate M src dst = M := by
-    apply Vector.ext
-    intro r hr
-    apply Vector.ext
-    intro c hc
+    ext r hr c hc
     change (rowAddDuplicate M src dst)[(⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)] =
       M[(⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)]
     rw [rowAddDuplicate_get]
@@ -546,10 +538,7 @@ theorem columnTupleMatrix_compose_perm_eq_colPermute
     (s : Vector (Fin m) n) (sigma : Vector (Fin n) n) :
     columnTupleMatrix A (fun i => s[sigma[i]]) =
       (ofFn fun r c => (columnTupleMatrix A (columnTupleVectorFn s))[r][sigma[c]]) := by
-  apply Vector.ext
-  intro r hr
-  apply Vector.ext
-  intro c hc
+  ext r hr c hc
   change
     (columnTupleMatrix A (fun i => s[sigma[i]]))[(⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)] =
       (ofFn fun r c =>
@@ -583,8 +572,8 @@ private theorem columnTupleVectors_ofFn_succ
     Vector.ofFn cols =
       insertAt (cols (Fin.last n)) (Vector.ofFn fun i : Fin n => cols i.castSucc)
         (Fin.last n) := by
-  apply Vector.ext
-  intro i hi
+  ext i hi
+  apply Fin.val_eq_of_eq
   change (Vector.ofFn cols)[(⟨i, hi⟩ : Fin (n + 1))] =
     (insertAt (cols (Fin.last n)) (Vector.ofFn fun i : Fin n => cols i.castSucc)
       (Fin.last n))[(⟨i, hi⟩ : Fin (n + 1))]
@@ -619,8 +608,7 @@ private theorem insertAt_last_injective_pair {α : Type u} {n : Nat}
       rw [h]
     rw [insertAt_get_self, insertAt_get_self] at hlast
     exact hlast
-  · apply Vector.ext
-    intro i hi
+  · ext i hi
     let idx : Fin n := ⟨i, hi⟩
     have hidx :
         (insertAt c pref (Fin.last n))[idx.castSucc] =
@@ -1048,10 +1036,7 @@ theorem det_eq_foldl_laplace_col
             simp [C, ofFn]]
           exact congrArg (fun c => M[row][c]) (moveColumnToLastValues_last col)
         have hminor : deleteRowCol C row (Fin.last n) = deleteRowCol M row col := by
-          apply Vector.ext
-          intro i hi
-          apply Vector.ext
-          intro j hj
+          ext i hi j hj
           let ii : Fin n := ⟨i, hi⟩
           let jj : Fin n := ⟨j, hj⟩
           change (deleteRowCol C row (Fin.last n))[ii][jj] =
@@ -1149,10 +1134,7 @@ private theorem columnSumMatrixWithSuffix_nil
     {R : Type u} [Lean.Grind.CommRing R] {n m : Nat}
     (source coeff : Matrix R n m) :
     columnSumMatrixWithSuffix source coeff [] = columnSumMatrix source coeff := by
-  apply Vector.ext
-  intro r hr
-  apply Vector.ext
-  intro c hc
+  ext r hr c hc
   change (columnSumMatrixWithSuffix source coeff [])[(⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)] =
       (columnSumMatrix source coeff)[(⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)]
   rw [columnSumMatrixWithSuffix_entry, columnSumMatrix_entry]
@@ -1164,10 +1146,7 @@ private theorem columnSumMatrixWithSuffix_eq
     (hfull : chosen.length = n) :
     columnSumMatrixWithSuffix source coeff chosen =
       columnTupleMatrix source (fun j => chosen[j.val]'(by omega)) := by
-  apply Vector.ext
-  intro r hr
-  apply Vector.ext
-  intro c hc
+  ext r hr c hc
   change (columnSumMatrixWithSuffix source coeff chosen)[(⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)] =
       (columnTupleMatrix source (fun j => chosen[j.val]'(by omega)))[(⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)]
   rw [columnSumMatrixWithSuffix_entry, dif_pos (by omega : n - chosen.length ≤ c)]
@@ -1182,10 +1161,7 @@ private theorem colReplace_columnSumMatrixWithSuffix_extend
     colReplace (columnSumMatrixWithSuffix source coeff chosen)
         (⟨n - chosen.length - 1, by omega⟩ : Fin n) (fun r => source[r][c]) =
       columnSumMatrixWithSuffix source coeff (c :: chosen) := by
-  apply Vector.ext
-  intro r hr
-  apply Vector.ext
-  intro k hk2
+  ext r hr k hk2
   change (colReplace (columnSumMatrixWithSuffix source coeff chosen)
       (⟨n - chosen.length - 1, by omega⟩ : Fin n) (fun r => source[r][c]))[
       (⟨r, hr⟩ : Fin n)][(⟨k, hk2⟩ : Fin n)] =
@@ -1248,10 +1224,7 @@ private theorem det_columnSumMatrixWithSuffix_expand
           (fun r => (List.finRange m).foldl
             (fun acc k => acc + coeff[dst][k] * source[r][k]) 0) =
         columnSumMatrixWithSuffix source coeff chosen := by
-    apply Vector.ext
-    intro r hr
-    apply Vector.ext
-    intro c hc
+    ext r hr c hc
     change (colReplace (columnSumMatrixWithSuffix source coeff chosen) dst _)[
         (⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)] =
       (columnSumMatrixWithSuffix source coeff chosen)[(⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)]
@@ -1610,8 +1583,8 @@ private theorem assembleColumnsSuffix_full
     (hk : chosen.length ≤ n) (hfull : chosen.length = n) :
     assembleColumnsSuffix chosen pref hk =
       Vector.ofFn (fun j : Fin n => chosen[j.val]'(by omega)) := by
-  apply Vector.ext
-  intro i hi
+  ext i hi
+  apply Fin.val_eq_of_eq
   change (assembleColumnsSuffix chosen pref hk)[(⟨i, hi⟩ : Fin n)] =
     (Vector.ofFn (fun j : Fin n => chosen[j.val]'(by omega)))[(⟨i, hi⟩ : Fin n)]
   simpa [hfull] using
@@ -1699,13 +1672,7 @@ theorem det_columnSumMatrix_eq_sum_columnTuples
       det (columnTupleMatrix source (columnTupleVectorFn (assembleColumnsSuffix [] cols (by simp)))) =
         det (columnTupleMatrix source (columnTupleVectorFn cols)) := by
     apply congrArg det
-    apply Vector.ext
-    intro i hi
-    change (columnTupleMatrix source (columnTupleVectorFn (assembleColumnsSuffix [] cols (by simp))))[
-        (⟨i, hi⟩ : Fin n)] =
-      (columnTupleMatrix source (columnTupleVectorFn cols))[(⟨i, hi⟩ : Fin n)]
-    apply Vector.ext
-    intro j hj
+    ext i hi j hj
     simp [columnTupleMatrix, columnTupleVectorFn, ofFn]
     change source[(⟨i, hi⟩ : Fin n)][
         (assembleColumnsSuffix [] cols (by simp))[(⟨j, hj⟩ : Fin n)]] =
@@ -1724,10 +1691,7 @@ theorem det_gramMatrix_eq_sum_columnTuples
           columnTupleCoeff A cols *
             det (columnTupleMatrix A (columnTupleVectorFn cols))) 0 := by
   have hgram : gramMatrix A = columnSumMatrix A A := by
-    apply Vector.ext
-    intro r hr
-    apply Vector.ext
-    intro c hc
+    ext r hr c hc
     change (gramMatrix A)[(⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)] =
       (columnSumMatrix A A)[(⟨r, hr⟩ : Fin n)][(⟨c, hc⟩ : Fin n)]
     rw [columnSumMatrix_entry]
