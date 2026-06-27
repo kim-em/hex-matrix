@@ -471,7 +471,7 @@ private theorem fin_idxOf_lt {n : Nat} {xs : List (Fin n)}
 
 /-- The inverse permutation vector: at value `c`, return the position where
 `c` occurs in `perm`. -/
-private def inversePermutationValues {n : Nat}
+def inversePermutationValues {n : Nat}
     (perm : Vector (Fin n) n) (hnodup : perm.toList.Nodup) :
     Vector (Fin n) n :=
   Vector.ofFn fun c =>
@@ -710,6 +710,7 @@ private theorem inversePermutationValues_involutive {n : Nat}
       hi.symm
   exact hleft.trans h
 
+@[expose]
 def inversePermutationVector {n : Nat}
     (perm : Vector (Fin n) n) : Vector (Fin n) n :=
   if hnodup : perm.toList.Nodup then
