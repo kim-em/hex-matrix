@@ -1,42 +1,23 @@
-{
-  "version": "1.2.0",
-  "packagesDir": ".lake/packages",
-  "packages": [
-    {
-      "url": "https://github.com/kim-em/hex-test-kit.git",
-      "type": "git",
-      "subDir": null,
-      "scope": "",
-      "rev": "a3355fd337e13fba815e22d55c1b21060ee4bbd1",
-      "name": "\u00abhex-test-kit\u00bb",
-      "manifestFile": "lake-manifest.json",
-      "inputRev": "a3355fd337e13fba815e22d55c1b21060ee4bbd1",
-      "inherited": false,
-      "configFile": "lakefile.toml"
-    },
-    {
-      "type": "path",
-      "scope": "",
-      "name": "HexMatrix",
-      "manifestFile": "lake-manifest.json",
-      "inherited": false,
-      "dir": "..",
-      "configFile": "lakefile.toml"
-    },
-    {
-      "url": "https://github.com/leanprover-community/batteries.git",
-      "type": "git",
-      "subDir": null,
-      "scope": "",
-      "rev": "5c57f3857ba81924a88b2cdf4f062e34ec04ff11",
-      "name": "batteries",
-      "manifestFile": "lake-manifest.json",
-      "inputRev": "v4.30.0-rc2",
-      "inherited": true,
-      "configFile": "lakefile.toml"
-    }
-  ],
-  "name": "\u00abhex-matrix-conformance\u00bb",
-  "lakeDir": ".lake",
-  "fixedToolchain": false
-}
+{"version": "1.2.0",
+ "packagesDir": ".lake/packages",
+ "packages":
+ [{"url": "https://github.com/kim-em/hex-test-kit.git",
+   "type": "git",
+   "subDir": null,
+   "scope": "",
+   "rev": "af49dc8131395afd44cb19297a55884882397c1b",
+   "name": "«hex-test-kit»",
+   "manifestFile": "lake-manifest.json",
+   "inputRev": "af49dc8131395afd44cb19297a55884882397c1b",
+   "inherited": false,
+   "configFile": "lakefile.toml"},
+  {"type": "path",
+   "scope": "",
+   "name": "HexMatrix",
+   "manifestFile": "lake-manifest.json",
+   "inherited": false,
+   "dir": "..",
+   "configFile": "lakefile.toml"}],
+ "name": "«hex-matrix-conformance»",
+ "lakeDir": ".lake",
+ "fixedToolchain": false}

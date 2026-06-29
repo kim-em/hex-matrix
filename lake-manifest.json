@@ -1,16 +1,6 @@
 {"version": "1.2.0",
  "packagesDir": ".lake/packages",
- "packages":
- [{"url": "https://github.com/leanprover-community/batteries.git",
-   "type": "git",
-   "subDir": null,
-   "scope": "",
-   "rev": "5c57f3857ba81924a88b2cdf4f062e34ec04ff11",
-   "name": "batteries",
-   "manifestFile": "lake-manifest.json",
-   "inputRev": "v4.30.0-rc2",
-   "inherited": false,
-   "configFile": "lakefile.toml"}],
+ "packages": [],
  "name": "«hex-matrix»",
  "lakeDir": ".lake",
  "fixedToolchain": false}
