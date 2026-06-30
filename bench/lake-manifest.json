@@ -7,10 +7,10 @@
       "type": "git",
       "subDir": null,
       "scope": "",
-      "rev": "49d4eb822ce66aa14b18c2472c18848a2411792d",
+      "rev": "c9cb6bcb3287ea0870f66c9dfcba08baa08f97f6",
       "name": "HexBasic",
       "manifestFile": "lake-manifest.json",
-      "inputRev": "49d4eb822ce66aa14b18c2472c18848a2411792d",
+      "inputRev": "c9cb6bcb3287ea0870f66c9dfcba08baa08f97f6",
       "inherited": true,
       "configFile": "lakefile.toml"
     },
